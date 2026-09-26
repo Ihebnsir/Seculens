@@ -1,7 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 * {
   box-sizing: border-box;
 }
 
+:root {
+  --page: #0a0e14;
+  --panel: #11161f;
+  --panel-raised: #151c27;
+  --line: rgba(0, 245, 160, 0.18);
+  --line-blue: rgba(0, 212, 255, 0.22);
+  --text: #e8f0f3;
+  --muted: #8b9aa6;
+  --cyan: #00d4ff;
+  --green: #00f5a0;
+  --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --sans: 'Inter', sans-serif;
+}
+
 body {
   margin: 0;
+  min-width: 320px;
+  background: var(--page);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
 }

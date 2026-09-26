@@ -1,48 +1,135 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
 import ScanForm from './components/ScanForm';
 import ResultsPanel from './components/ResultsPanel';
-import { mockScan } from './data/mockScan';
+import ScanHistory from './components/ScanHistory';
+import LoginForm from './components/LoginForm';
+import RegisterForm from './components/RegisterForm';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { createScan, getScan, setFindingFixed, UNAUTHORIZED_EVENT } from './api/scansApi';
 
-function App() {
-  // On garde l'URL saisie dans un state pour pouvoir la lire et la modifier.
+function AppContent() {
+  const { user, isAuthenticated, logout } = useAuth();
+  const [authMode, setAuthMode] = useState('login');
   const [targetUrl, setTargetUrl] = useState('');
-
-  // On garde le message d'erreur séparé pour afficher un message rouge si l'URL est invalide.
   const [error, setError] = useState('');
-
-  // On garde le résultat de scan simulé. Au départ, aucune analyse n'a encore été lancée.
   const [scanResult, setScanResult] = useState(null);
+  const [status, setStatus] = useState('idle');
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
 
-  // Cette fonction simule un clic sur le bouton "Start Scan" sans appel réseau réel.
-  const handleStartScan = () => {
+  useEffect(() => {
+    window.addEventListener(UNAUTHORIZED_EVENT, logout);
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, logout);
+  }, [logout]);
+
+  const handleStartScan = async () => {
     const cleanedUrl = targetUrl.trim();
 
     if (!cleanedUrl) {
       setError('Please enter a URL before starting the scan.');
-      setScanResult(null);
       return;
     }
 
     if (!/^https?:\/\//i.test(cleanedUrl)) {
       setError('The URL must start with http:// or https://');
-      setScanResult(null);
       return;
     }
 
     setError('');
-    setScanResult({
-      ...mockScan,
-      target: cleanedUrl,
-      scannedAt: new Date().toISOString()
-    });
+    setStatus('loading');
+
+    try {
+      const scan = await createScan(cleanedUrl);
+      setScanResult(scan);
+      setStatus('results');
+      setHistoryRefreshKey((key) => key + 1);
+    } catch (requestError) {
+      setError(requestError.message);
+      setStatus('error');
+    }
   };
+
+  const handleSelectScan = async (scanId) => {
+    setError('');
+    setStatus('loading');
+
+    try {
+      const scan = await getScan(scanId);
+      setScanResult(scan);
+      setStatus('results');
+    } catch (requestError) {
+      setError(requestError.message);
+      setStatus('error');
+    }
+  };
+
+  const handleSetFindingFixed = async (findingId, fixed) => {
+    // Les appels API utilisent les identifiants MongoDB, nommés _id.
+    const scanId = scanResult?._id;
+    if (!scanId) {
+      throw new Error('Identifiant du scan manquant.');
+    }
+
+    const updatedScan = await setFindingFixed(scanId, findingId, fixed);
+    if (updatedScan?._id) {
+      setScanResult(updatedScan);
+    } else {
+      setScanResult((currentScan) => ({
+        ...currentScan,
+        findings: currentScan.findings.map((finding) =>
+          finding._id === findingId ? { ...finding, fixed } : finding
+        )
+      }));
+    }
+  };
+
+  const handleDeleteScan = (scanId) => {
+    if (scanResult?._id === scanId) {
+      setScanResult(null);
+      setStatus('idle');
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="app-shell auth-shell">
+        <header className="app-header auth-brand">
+          <h1>SecuLens</h1>
+          <p>Web Security Assessment Platform</p>
+        </header>
+        <main className="auth-layout">
+          <div className="auth-identity">
+            <span className="eyebrow">SECULENS / ACCESS</span>
+            <h2>Security insights, in focus.</h2>
+            <p className="auth-code">AUTH_GATE // 01</p>
+          </div>
+          {authMode === 'login' ? (
+            <LoginForm onSwitchToRegister={() => setAuthMode('register')} />
+          ) : (
+            <RegisterForm onSwitchToLogin={() => setAuthMode('login')} />
+          )}
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="app-shell">
       <header className="app-header">
-        <h1>SecuLens</h1>
-        <p>Web Security Assessment Platform</p>
+        <div className="brand-lockup">
+          <h1>SecuLens</h1>
+          <p>Web Security Assessment Platform</p>
+        </div>
+        <div className="account-bar">
+          <span className="user-avatar" aria-hidden="true">
+            {user?.email?.trim()?.charAt(0)?.toUpperCase() || '?'}
+          </span>
+          <span className="account-email">{user?.email}</span>
+          <button type="button" className="secondary-button" onClick={logout}>
+            Log out
+            <span className="logout-arrow" aria-hidden="true">→</span>
+          </button>
+        </div>
       </header>
 
       <main className="app-main">
@@ -51,11 +138,27 @@ function App() {
           onUrlChange={setTargetUrl}
           onSubmit={handleStartScan}
           error={error}
+          loading={status === 'loading'}
         />
 
-        <ResultsPanel scan={scanResult} />
+        <ScanHistory
+          refreshKey={historyRefreshKey}
+          onSelectScan={handleSelectScan}
+          onDeleteScan={handleDeleteScan}
+        />
+
+        {status === 'loading' && <p className="loading-message">Loading scan...</p>}
+        <ResultsPanel scan={scanResult} onSetFindingFixed={handleSetFindingFixed} />
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

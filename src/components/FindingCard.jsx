@@ -1,8 +1,30 @@
+import { useState } from 'react';
 import SeverityBadge from './SeverityBadge';
 
-function FindingCard({ finding }) {
+function FindingCard({ finding, onSetFixed }) {
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleFixedChange = async (event) => {
+    const fixed = event.target.checked;
+    setSaving(true);
+    setError('');
+
+    try {
+      // Chaque finding est identifié par son _id MongoDB.
+      if (!finding._id) {
+        throw new Error('Identifiant du finding manquant.');
+      }
+      await onSetFixed(finding._id, fixed);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <article className="finding-card">
+    <article className={`finding-card${finding.fixed ? ' finding-fixed' : ''}`}>
       <div className="finding-header">
         <div>
           <p className="finding-rule">{finding.ruleId}</p>
@@ -10,6 +32,17 @@ function FindingCard({ finding }) {
         </div>
         <SeverityBadge severity={finding.severity} />
       </div>
+
+      <label className="fixed-control">
+        <input
+          type="checkbox"
+          checked={Boolean(finding.fixed)}
+          onChange={handleFixedChange}
+          disabled={saving}
+        />
+        Mark as fixed
+      </label>
+      {error && <p className="error-message">{error}</p>}
 
       <div className="finding-meta">
         <span>Confidence: {finding.confidence}</span>

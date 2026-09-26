@@ -1,12 +1,29 @@
 import ScoreCard from './ScoreCard';
 import FindingCard from './FindingCard';
 
-function ResultsPanel({ scan }) {
+function formatScanDate(dateValue) {
+  // Le champ createdAt peut être absent ou contenir une date invalide.
+  if (!dateValue) {
+    return 'Date indisponible';
+  }
+
+  const date = new Date(dateValue);
+  return Number.isNaN(date.getTime()) ? 'Date indisponible' : date.toLocaleString();
+}
+
+function ResultsPanel({ scan, onSetFindingFixed }) {
   if (!scan) {
     return (
       <section className="results-panel empty-state" aria-live="polite">
         <h2>Results</h2>
-        <p>No scan yet</p>
+        <p className="empty-state-message">
+          <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="8" />
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 1.5v3M22.5 12h-3M12 22.5v-3M1.5 12h3" />
+          </svg>
+          No scan yet
+        </p>
       </section>
     );
   }
@@ -22,7 +39,7 @@ function ResultsPanel({ scan }) {
         </div>
         <div className="scan-meta">
           <span>Status: {scan.status}</span>
-          <span>Scanned: {new Date(scan.scannedAt).toLocaleString()}</span>
+          <span>Scanned: {formatScanDate(scan.createdAt)}</span>
         </div>
       </div>
 
@@ -36,7 +53,11 @@ function ResultsPanel({ scan }) {
 
       <div className="findings-list">
         {scan.findings.map((finding) => (
-          <FindingCard key={finding.ruleId} finding={finding} />
+          <FindingCard
+            key={finding._id}
+            finding={finding}
+            onSetFixed={onSetFindingFixed}
+          />
         ))}
       </div>
     </section>
