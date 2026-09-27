@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { applyTheme, getInitialTheme } from './utils/theme';
+
+// Le thème est posé avant le premier rendu, pour éviter un flash de la mauvaise couleur.
+applyTheme(getInitialTheme());
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

@@ -8,6 +8,7 @@ import RegisterForm from './components/RegisterForm';
 import ForgotPasswordForm from './components/ForgotPasswordForm';
 import ResetPasswordForm from './components/ResetPasswordForm';
 import EmailVerificationForm from './components/EmailVerificationForm';
+import ThemeToggle from './components/ThemeToggle';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { createScan, getScan, setFindingFixed, UNAUTHORIZED_EVENT } from './api/scansApi';
 import { getEmailVerificationToken, getResetPasswordToken } from './utils/url';
@@ -100,14 +101,16 @@ function AppContent() {
     return (
       <div className="app-shell auth-shell">
         <header className="app-header auth-brand">
-          <h1>SecuLens</h1>
-          <p>Web Security Assessment Platform</p>
+          <div className="brand-lockup">
+            <h1>SecuLens</h1>
+            <p>Web Security Assessment Platform</p>
+          </div>
+          <ThemeToggle />
         </header>
         <main className="auth-layout">
           <div className="auth-identity">
             <span className="eyebrow">SECULENS / ACCESS</span>
             <h2>Security insights, in focus.</h2>
-            <p className="auth-code">AUTH_GATE // 01</p>
           </div>
           <EmailVerificationForm token={emailVerificationToken} />
         </main>
@@ -125,14 +128,16 @@ function AppContent() {
     return (
       <div className="app-shell auth-shell">
         <header className="app-header auth-brand">
-          <h1>SecuLens</h1>
-          <p>Web Security Assessment Platform</p>
+          <div className="brand-lockup">
+            <h1>SecuLens</h1>
+            <p>Web Security Assessment Platform</p>
+          </div>
+          <ThemeToggle />
         </header>
         <main className="auth-layout">
           <div className="auth-identity">
             <span className="eyebrow">SECULENS / ACCESS</span>
             <h2>Security insights, in focus.</h2>
-            <p className="auth-code">AUTH_GATE // 01</p>
           </div>
           {recoveryForm}
         </main>
@@ -144,14 +149,16 @@ function AppContent() {
     return (
       <div className="app-shell auth-shell">
         <header className="app-header auth-brand">
-          <h1>SecuLens</h1>
-          <p>Web Security Assessment Platform</p>
+          <div className="brand-lockup">
+            <h1>SecuLens</h1>
+            <p>Web Security Assessment Platform</p>
+          </div>
+          <ThemeToggle />
         </header>
         <main className="auth-layout">
           <div className="auth-identity">
             <span className="eyebrow">SECULENS / ACCESS</span>
             <h2>Security insights, in focus.</h2>
-            <p className="auth-code">AUTH_GATE // 01</p>
           </div>
           {authMode === 'login' ? (
             <LoginForm
@@ -180,6 +187,7 @@ function AppContent() {
             {user?.email?.trim()?.charAt(0)?.toUpperCase() || '?'}
           </span>
           <span className="account-email">{user?.email}</span>
+          <ThemeToggle />
           <button type="button" className="secondary-button" onClick={logout}>
             Log out
             <span className="logout-arrow" aria-hidden="true">→</span>

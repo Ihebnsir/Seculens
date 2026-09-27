@@ -1,10 +1,12 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { StrictMode } from 'react';
 import App from './App';
+import { getInitialTheme } from './utils/theme';
 
 beforeEach(() => {
   window.localStorage.clear();
   window.history.pushState({}, '', '/');
+  document.documentElement.removeAttribute('data-theme');
 });
 
 test('shows the login screen when no session is saved', () => {
@@ -222,4 +224,21 @@ test('saves the session, sends its token to scans, and logs out on 401', async (
   await waitFor(() => expect(screen.getByRole('button', { name: 'Log in' })).toBeInTheDocument());
   expect(global.fetch.mock.calls[2][1].headers.Authorization).toBe('Bearer test-token');
   expect(window.localStorage.getItem('seculens_token')).toBeNull();
+});
+
+test('switches between dark and light themes and saves the choice', () => {
+  render(<App />);
+  fireEvent.click(screen.getByRole('button', { name: 'Switch to light theme' }));
+  expect(document.documentElement).toHaveAttribute('data-theme', 'light');
+  expect(window.localStorage.getItem('seculens_theme')).toBe('light');
+
+  fireEvent.click(screen.getByRole('button', { name: 'Switch to dark theme' }));
+  expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+  expect(window.localStorage.getItem('seculens_theme')).toBe('dark');
+});
+
+test('uses the saved theme first, then falls back to dark', () => {
+  expect(getInitialTheme()).toBe('dark');
+  window.localStorage.setItem('seculens_theme', 'light');
+  expect(getInitialTheme()).toBe('light');
 });

@@ -13,9 +13,9 @@
   /* Pas d'overflow: hidden : un contenu trop large doit rester visible et défilable, jamais coupé. */
   background-color: var(--page);
   background-image:
-    radial-gradient(ellipse at 50% 0%, rgba(0, 212, 255, 0.065) 0%, rgba(0, 245, 160, 0.018) 38%, var(--page) 80%),
-    linear-gradient(rgba(0, 212, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 255, 0.025) 1px, transparent 1px);
+    radial-gradient(ellipse at 50% 0%, var(--glow-top) 0%, var(--glow-top-soft) 38%, var(--page) 80%),
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 38px 38px;
   color: var(--text);
 }
@@ -27,7 +27,7 @@
   right: 0;
   width: 42vw;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 245, 160, 0.28), transparent);
+  background: linear-gradient(90deg, transparent, var(--accent-line), transparent);
   content: '';
 }
 
@@ -55,7 +55,7 @@
   bottom: 0;
   left: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.08), rgba(0, 245, 160, 0.3), rgba(0, 212, 255, 0.08), transparent);
+  background: linear-gradient(90deg, transparent, var(--accent-line-soft), var(--accent-line), var(--accent-line-soft), transparent);
   content: '';
 }
 
@@ -100,10 +100,10 @@
   width: 36px;
   height: 36px;
   place-items: center;
-  border: 1px solid rgba(0, 245, 160, 0.45);
+  border: 1px solid var(--line-strong);
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--green), var(--cyan));
-  box-shadow: 0 0 14px rgba(0, 245, 160, 0.13);
+  background: var(--accent-gradient);
+  box-shadow: var(--shadow-avatar);
   color: var(--on-accent);
   font-family: var(--mono);
   font-size: 0.88rem;
@@ -129,7 +129,7 @@
 
 .scan-card {
   border-color: var(--line);
-  box-shadow: inset 0 1px 0 rgba(0, 245, 160, 0.035), 0 0 24px rgba(0, 245, 160, 0.035);
+  box-shadow: var(--shadow-scan-card);
 }
 
 /* Cartes internes (score, findings, preuves, résumé) : fond plus sombre, bordure discrète. */
@@ -140,7 +140,7 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-panel);
   background: var(--surface);
-  box-shadow: 0 0 24px rgba(0, 245, 160, 0.025);
+  box-shadow: var(--shadow-card);
   transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
 }
 
@@ -152,12 +152,12 @@
   .finding-card:hover,
   .evidence-box:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.045);
+    box-shadow: var(--shadow-card-hover);
   }
 
   .scan-card:hover {
     border-color: var(--line-strong);
-    box-shadow: inset 0 1px 0 rgba(0, 245, 160, 0.05), 0 7px 24px rgba(0, 245, 160, 0.075);
+    box-shadow: var(--shadow-scan-card-hover);
   }
 }
 
@@ -177,9 +177,9 @@
 .primary-button {
   min-height: var(--tap-size);
   padding: var(--space-3) var(--space-4);
-  border: 1px solid rgba(0, 245, 160, 0.55);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius);
-  background: linear-gradient(105deg, var(--green), #00d4c3 58%, var(--cyan));
+  background: var(--accent-gradient);
   color: var(--on-accent);
   font-weight: 700;
   cursor: pointer;
@@ -189,7 +189,7 @@
 .primary-button:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.08);
-  box-shadow: 0 0 20px rgba(0, 245, 160, 0.2);
+  box-shadow: var(--glow-primary);
 }
 
 .primary-button:disabled {
@@ -208,7 +208,7 @@
   padding: var(--space-2) var(--space-4);
   border: 1px solid var(--line-blue);
   border-radius: var(--radius);
-  background: rgba(17, 22, 31, 0.75);
+  background: var(--button-bg);
   color: var(--cyan);
   font-size: 0.8rem;
   cursor: pointer;
@@ -218,7 +218,7 @@
 .secondary-button:hover:not(:disabled) {
   border-color: var(--cyan);
   background: rgba(0, 212, 255, 0.09);
-  box-shadow: 0 0 12px rgba(0, 212, 255, 0.1);
+  box-shadow: var(--glow-secondary);
   color: var(--cyan-light);
 }
 
@@ -230,7 +230,7 @@
 .danger-button:hover:not(:disabled) {
   border-color: var(--danger);
   background: rgba(255, 70, 112, 0.09);
-  box-shadow: 0 0 12px rgba(255, 70, 112, 0.12);
+  box-shadow: var(--glow-danger);
   color: var(--danger);
 }
 
@@ -247,6 +247,22 @@
 
 .secondary-button:hover .logout-arrow {
   transform: translateX(2px);
+}
+
+/* Bouton de thème : carré de 44px (taille tactile), seulement une icône. */
+.theme-toggle {
+  flex: 0 0 var(--tap-size);
+  width: var(--tap-size);
+  padding: 0;
+}
+
+.theme-icon {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }
 
 /* 4. Lien texte : zone cliquable de 44px de haut, même si le texte est petit. */
@@ -310,8 +326,8 @@
 
 .url-input:focus,
 .auth-input:focus {
-  border-color: rgba(0, 212, 255, 0.78);
-  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1), 0 0 18px rgba(0, 212, 255, 0.12);
+  border-color: var(--focus-border);
+  box-shadow: var(--focus-ring);
 }
 
 /* ---------- Messages ---------- */
@@ -620,14 +636,14 @@
 
 .fixed-control input:hover:not(:disabled) {
   border-color: var(--cyan);
-  box-shadow: 0 0 8px rgba(0, 212, 255, 0.15);
+  box-shadow: var(--glow-checkbox);
 }
 
 /* La coche est un petit SVG intégré, affiché seulement quand la case est cochée. */
 .fixed-control input:checked {
   border-color: var(--green);
   background-color: var(--green);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2 5 8.5l4.5-5' fill='none' stroke='%2304120f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: var(--check-icon);
 }
 
 .fixed-control input:disabled {
@@ -707,8 +723,7 @@
 .history-select strong,
 .finding-rule,
 .finding-cwe,
-.evidence-row dd,
-.auth-code {
+.evidence-row dd {
   font-family: var(--mono);
 }
 
@@ -763,17 +778,12 @@
   line-height: 1.12;
 }
 
-.auth-code {
-  color: var(--cyan);
-  font-size: 0.78rem;
-}
-
 .auth-panel {
   padding: var(--space-8);
   border: 1px solid var(--line-blue);
   border-radius: var(--radius-panel);
   background: var(--panel);
-  box-shadow: 0 0 36px rgba(0, 212, 255, 0.045);
+  box-shadow: var(--shadow-auth-panel);
 }
 
 .auth-panel-heading h2 {
@@ -843,7 +853,10 @@
     padding: var(--space-5);
   }
 
+  /* Écrans d'authentification : le bouton de thème reste sur la même ligne que le logo. */
   .auth-brand {
+    flex-direction: row;
+    align-items: center;
     margin-bottom: var(--space-6);
   }
 
@@ -860,10 +873,6 @@
   .auth-identity h2 {
     margin: var(--space-3) 0;
     font-size: 1.8rem;
-  }
-
-  .auth-code {
-    display: none;
   }
 
   .auth-panel {

@@ -4,13 +4,20 @@
   box-sizing: border-box;
 }
 
-/* Toutes les couleurs et tous les espacements du thème sont définis ici, une seule fois. */
+/* Toutes les couleurs et tous les espacements du thème sont définis ici, une seule fois.
+   :root = thème sombre (par défaut). Le bloc :root[data-theme="light"] plus bas
+   remplace uniquement les couleurs quand le thème clair est actif. */
 :root {
+  /* Indique au navigateur le thème, pour les barres de défilement et contrôles natifs. */
+  color-scheme: dark;
+
   /* Fonds */
   --page: #0a0e14;
   --panel: rgba(17, 22, 31, 0.96);
   --surface: #0d131c;
+  --surface-sunken: #0d131c;
   --input-bg: #0b1017;
+  --button-bg: rgba(17, 22, 31, 0.75);
 
   /* Textes */
   --text: #e8f0f3;
@@ -39,6 +46,31 @@
   --border-subtle: rgba(132, 157, 170, 0.15);
   --border-input: rgba(132, 157, 170, 0.24);
   --border-danger: rgba(255, 98, 130, 0.35);
+  --focus-border: rgba(0, 212, 255, 0.78);
+
+  /* Dégradés, lignes décoratives et grille de fond */
+  --accent-gradient: linear-gradient(105deg, var(--green), #00d4c3 58%, var(--cyan));
+  --accent-line: rgba(0, 245, 160, 0.3);
+  --accent-line-soft: rgba(0, 212, 255, 0.08);
+  --grid-line: rgba(0, 212, 255, 0.025);
+  --glow-top: rgba(0, 212, 255, 0.065);
+  --glow-top-soft: rgba(0, 245, 160, 0.018);
+
+  /* Ombres : halos néon en sombre */
+  --shadow-card: 0 0 24px rgba(0, 245, 160, 0.025);
+  --shadow-card-hover: 0 6px 20px rgba(0, 212, 255, 0.045);
+  --shadow-scan-card: inset 0 1px 0 rgba(0, 245, 160, 0.035), 0 0 24px rgba(0, 245, 160, 0.035);
+  --shadow-scan-card-hover: inset 0 1px 0 rgba(0, 245, 160, 0.05), 0 7px 24px rgba(0, 245, 160, 0.075);
+  --shadow-auth-panel: 0 0 36px rgba(0, 212, 255, 0.045);
+  --shadow-avatar: 0 0 14px rgba(0, 245, 160, 0.13);
+  --glow-primary: 0 0 20px rgba(0, 245, 160, 0.2);
+  --glow-secondary: 0 0 12px rgba(0, 212, 255, 0.1);
+  --glow-danger: 0 0 12px rgba(255, 70, 112, 0.12);
+  --glow-checkbox: 0 0 8px rgba(0, 212, 255, 0.15);
+  --focus-ring: 0 0 0 2px rgba(0, 212, 255, 0.1), 0 0 18px rgba(0, 212, 255, 0.12);
+
+  /* Coche de la case "Mark as fixed" (SVG intégré, trait foncé sur fond vert) */
+  --check-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2 5 8.5l4.5-5' fill='none' stroke='%2304120f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 
   /* Échelle d'espacement : multiples de 4px */
   --space-1: 4px;
@@ -57,6 +89,68 @@
 
   --mono: 'JetBrains Mono', 'Fira Code', monospace;
   --sans: 'Inter', sans-serif;
+}
+
+/* Thème clair : seules les couleurs changent, les espacements restent identiques.
+   Les accents sont assombris pour garder un contraste d'au moins 4,5:1 sur fond clair (norme WCAG AA),
+   et les halos néon sont remplacés par des ombres grises douces. */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --page: #f4f7f9;
+  --panel: #ffffff;
+  --surface: #f7f9fa;
+  --surface-sunken: #edf1f4;
+  --input-bg: #f7f9fa;
+  --button-bg: #ffffff;
+
+  --text: #0a0e14;
+  --text-soft: #33424c;
+  --muted: #56656f;
+  --faint: #5f6d77;
+
+  --green: #007a52;
+  --cyan: #00739a;
+  --cyan-light: #005a78;
+  --on-accent: #ffffff;
+
+  --danger: #c01a3f;
+  --danger-soft: #c01a3f;
+  --orange: #b3470f;
+  --warning: #806300;
+  --sev-low: #00739a;
+  --sev-info: #007a52;
+
+  --line: rgba(0, 122, 82, 0.35);
+  --line-strong: rgba(0, 122, 82, 0.55);
+  --line-blue: rgba(0, 115, 154, 0.3);
+  --border-subtle: rgba(20, 40, 55, 0.12);
+  --border-input: rgba(20, 40, 55, 0.25);
+  --border-danger: rgba(192, 26, 63, 0.35);
+  --focus-border: rgba(0, 115, 154, 0.8);
+
+  --accent-gradient: linear-gradient(105deg, #007a52, #007a80 58%, #00739a);
+  --accent-line: rgba(0, 122, 82, 0.3);
+  --accent-line-soft: rgba(0, 115, 154, 0.1);
+  /* Grille de fond gardée mais très discrète, en gris plutôt qu'en cyan. */
+  --grid-line: rgba(20, 40, 55, 0.035);
+  --glow-top: rgba(0, 115, 154, 0.05);
+  --glow-top-soft: rgba(0, 122, 82, 0.015);
+
+  --shadow-card: 0 1px 2px rgba(20, 40, 55, 0.05);
+  --shadow-card-hover: 0 6px 16px rgba(20, 40, 55, 0.08);
+  --shadow-scan-card: 0 1px 3px rgba(20, 40, 55, 0.08);
+  --shadow-scan-card-hover: 0 6px 18px rgba(20, 40, 55, 0.1);
+  --shadow-auth-panel: 0 8px 28px rgba(20, 40, 55, 0.08);
+  --shadow-avatar: 0 1px 3px rgba(20, 40, 55, 0.2);
+  --glow-primary: 0 4px 12px rgba(20, 40, 55, 0.18);
+  --glow-secondary: 0 2px 8px rgba(20, 40, 55, 0.1);
+  --glow-danger: 0 2px 8px rgba(192, 26, 63, 0.12);
+  --glow-checkbox: 0 0 0 3px rgba(0, 115, 154, 0.12);
+  --focus-ring: 0 0 0 3px rgba(0, 115, 154, 0.15);
+
+  /* Coche blanche : le vert du thème clair est trop foncé pour une coche foncée. */
+  --check-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2 5 8.5l4.5-5' fill='none' stroke='%23ffffff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 body {
