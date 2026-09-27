@@ -673,6 +673,13 @@
   color: #ff8197;
 }
 
+.success-message {
+  margin: 10px 0 0;
+  color: var(--green);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
 .auth-shell {
   justify-content: center;
   padding-top: 28px;

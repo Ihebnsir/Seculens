@@ -23,7 +23,8 @@ async function request(path, options = {}) {
   if (!response.ok) {
     const error = new Error(data?.error || 'The request to the SecuLens API failed.');
     error.status = response.status;
-    if (response.status === 401 && typeof window !== 'undefined') {
+    const emailNeedsVerification = response.status === 403 && data?.emailVerified === false;
+    if ((response.status === 401 || emailNeedsVerification) && typeof window !== 'undefined') {
       window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
     }
     throw error;

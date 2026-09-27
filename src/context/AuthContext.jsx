@@ -38,8 +38,7 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (email, password) => {
-    const data = await requestRegister(email, password);
-    saveSession(data);
+    return requestRegister(email, password);
   };
 
   const logout = () => {

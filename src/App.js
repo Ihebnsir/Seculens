@@ -5,12 +5,18 @@ import ResultsPanel from './components/ResultsPanel';
 import ScanHistory from './components/ScanHistory';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
+import ForgotPasswordForm from './components/ForgotPasswordForm';
+import ResetPasswordForm from './components/ResetPasswordForm';
+import EmailVerificationForm from './components/EmailVerificationForm';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { createScan, getScan, setFindingFixed, UNAUTHORIZED_EVENT } from './api/scansApi';
+import { getEmailVerificationToken, getResetPasswordToken } from './utils/url';
 
 function AppContent() {
   const { user, isAuthenticated, logout } = useAuth();
   const [authMode, setAuthMode] = useState('login');
+  const emailVerificationToken = getEmailVerificationToken(window.location.pathname);
+  const resetToken = getResetPasswordToken(window.location.pathname);
   const [targetUrl, setTargetUrl] = useState('');
   const [error, setError] = useState('');
   const [scanResult, setScanResult] = useState(null);
@@ -90,6 +96,50 @@ function AppContent() {
     }
   };
 
+  if (emailVerificationToken) {
+    return (
+      <div className="app-shell auth-shell">
+        <header className="app-header auth-brand">
+          <h1>SecuLens</h1>
+          <p>Web Security Assessment Platform</p>
+        </header>
+        <main className="auth-layout">
+          <div className="auth-identity">
+            <span className="eyebrow">SECULENS / ACCESS</span>
+            <h2>Security insights, in focus.</h2>
+            <p className="auth-code">AUTH_GATE // 01</p>
+          </div>
+          <EmailVerificationForm token={emailVerificationToken} />
+        </main>
+      </div>
+    );
+  }
+
+  if (resetToken) {
+    const recoveryForm = authMode === 'forgot' ? (
+      <ForgotPasswordForm onSwitchToLogin={() => { window.location.href = '/'; }} />
+    ) : (
+      <ResetPasswordForm token={resetToken} onRequestNewLink={() => setAuthMode('forgot')} />
+    );
+
+    return (
+      <div className="app-shell auth-shell">
+        <header className="app-header auth-brand">
+          <h1>SecuLens</h1>
+          <p>Web Security Assessment Platform</p>
+        </header>
+        <main className="auth-layout">
+          <div className="auth-identity">
+            <span className="eyebrow">SECULENS / ACCESS</span>
+            <h2>Security insights, in focus.</h2>
+            <p className="auth-code">AUTH_GATE // 01</p>
+          </div>
+          {recoveryForm}
+        </main>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="app-shell auth-shell">
@@ -104,9 +154,14 @@ function AppContent() {
             <p className="auth-code">AUTH_GATE // 01</p>
           </div>
           {authMode === 'login' ? (
-            <LoginForm onSwitchToRegister={() => setAuthMode('register')} />
-          ) : (
+            <LoginForm
+              onSwitchToRegister={() => setAuthMode('register')}
+              onSwitchToForgotPassword={() => setAuthMode('forgot')}
+            />
+          ) : authMode === 'register' ? (
             <RegisterForm onSwitchToLogin={() => setAuthMode('login')} />
+          ) : (
+            <ForgotPasswordForm onSwitchToLogin={() => setAuthMode('login')} />
           )}
         </main>
       </div>
