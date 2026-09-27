@@ -242,3 +242,51 @@ test('uses the saved theme first, then falls back to dark', () => {
   window.localStorage.setItem('seculens_theme', 'light');
   expect(getInitialTheme()).toBe('light');
 });
+
+test('polls the AI status after a scan, survives a network error, then shows the AI insight', async () => {
+  window.localStorage.setItem('seculens_token', 'test-token');
+  window.localStorage.setItem('seculens_user', JSON.stringify({ id: 'user-1', email: 'dev@example.com' }));
+  const finding = {
+    _id: 'finding-1', ruleId: 'SEC-001', title: 'CSP missing', severity: 'high', confidence: 'high',
+    cwe: 'CWE-693', evidence: { header: 'Content-Security-Policy' }, description: 'No CSP.',
+    remediation: 'Add a CSP.', fixed: false, aiExplanation: null
+  };
+  const scan = { _id: 'scan-1', target: 'https://example.com', status: 200, score: 80, findings: [finding] };
+  const explainedScan = {
+    ...scan,
+    findings: [{
+      ...finding,
+      aiExplanation: {
+        simpleExplanation: 'The browser has no content rules.',
+        realWorldRisk: 'Injected scripts would run.',
+        fixSteps: '1. Add the header. 2. Test the site.'
+      }
+    }]
+  };
+  let aiStatusCalls = 0;
+  const json = (body, status = 200) => Promise.resolve({ ok: status < 300, status, json: async () => body });
+  // Le faux backend répond selon l'URL appelée, quel que soit l'ordre des appels.
+  global.fetch = jest.fn((url, options = {}) => {
+    if (url.endsWith('/ai-status')) {
+      aiStatusCalls += 1;
+      return aiStatusCalls === 1 ? Promise.reject(new TypeError('Failed to fetch')) : json({ ready: true });
+    }
+    if (url.endsWith('/scans/scan-1')) return json(explainedScan);
+    if (url.endsWith('/scans') && options.method === 'POST') return json(scan, 201);
+    if (url.endsWith('/scans')) return json([]);
+    return json({ error: 'unexpected' }, 500);
+  });
+
+  render(<App />);
+  fireEvent.change(screen.getByLabelText('Target URL'), { target: { value: 'https://example.com' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Start Scan' }));
+
+  expect(await screen.findByText('CSP missing')).toBeInTheDocument();
+  expect(screen.getByText('AI is analyzing these findings...')).toBeInTheDocument();
+  expect(screen.queryByText('AI Insight')).not.toBeInTheDocument();
+
+  expect(await screen.findByText('The browser has no content rules.', {}, { timeout: 9000 })).toBeInTheDocument();
+  expect(screen.queryByText('AI is analyzing these findings...')).not.toBeInTheDocument();
+  expect(screen.getByText('Add the header.').tagName).toBe('LI');
+  expect(aiStatusCalls).toBe(2);
+}, 15000);

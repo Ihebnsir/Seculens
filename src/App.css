@@ -694,6 +694,111 @@
   overflow-wrap: anywhere;
 }
 
+/* ---------- Explications IA ---------- */
+
+/* Message de chargement discret en haut des résultats. */
+.ai-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.ai-spinner {
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ai-border);
+  border-top-color: var(--cyan);
+  border-radius: 50%;
+  animation: ai-spin 800ms linear infinite;
+}
+
+@keyframes ai-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Mouvement réduit demandé par le système : le spinner pulse au lieu de tourner. */
+@media (prefers-reduced-motion: reduce) {
+  .ai-spinner {
+    animation: ai-pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes ai-pulse {
+    50% { opacity: 0.4; }
+  }
+}
+
+/* Section "AI Insight" : bordure gauche et fond teintés cyan, pour la distinguer des données du scanner. */
+.ai-insight {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--ai-border);
+  border-left-width: 3px;
+  border-radius: var(--radius-panel);
+  background: var(--ai-bg);
+}
+
+.ai-insight-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--cyan);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ai-badge {
+  padding: 2px 6px;
+  border-radius: var(--radius);
+  background: var(--accent-gradient);
+  color: var(--on-accent);
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+}
+
+.ai-insight-block {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.ai-insight-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ai-insight-text,
+.ai-insight-steps {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.ai-insight-steps {
+  display: grid;
+  gap: var(--space-1);
+  padding-left: var(--space-5);
+}
+
+.ai-insight-steps li::marker {
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
 /* ---------- Badges de sévérité ---------- */
 
 .severity-badge {

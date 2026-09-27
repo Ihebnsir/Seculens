@@ -56,6 +56,15 @@ export async function getScan(scanId) {
   return data?.scan || data;
 }
 
+// Indique si les explications IA d'un scan sont prêtes : renvoie { ready: true/false }.
+export async function getAiStatus(scanId) {
+  if (!scanId) {
+    throw new Error('Identifiant du scan manquant.');
+  }
+
+  return request(`/scans/${encodeURIComponent(scanId)}/ai-status`);
+}
+
 export async function setFindingFixed(scanId, findingId, fixed) {
   if (!scanId || !findingId) {
     throw new Error('Identifiant du scan ou du finding manquant.');

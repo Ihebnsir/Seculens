@@ -2,7 +2,7 @@ import ScoreCard from './ScoreCard';
 import FindingCard from './FindingCard';
 import { formatScanDate } from '../utils/date';
 
-function ResultsPanel({ scan, onSetFindingFixed }) {
+function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
   if (!scan) {
     return (
       <section className="results-panel empty-state" aria-live="polite">
@@ -33,6 +33,14 @@ function ResultsPanel({ scan, onSetFindingFixed }) {
           <span>Scanned: {formatScanDate(scan.createdAt)}</span>
         </div>
       </div>
+
+      {/* Message discret : les findings restent visibles et utilisables pendant l'analyse IA. */}
+      {aiLoading && (
+        <p className="ai-loading" role="status">
+          <span className="ai-spinner" aria-hidden="true" />
+          AI is analyzing these findings...
+        </p>
+      )}
 
       <ScoreCard score={scan.score} />
 

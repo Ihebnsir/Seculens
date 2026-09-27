@@ -48,6 +48,10 @@
   --border-danger: rgba(255, 98, 130, 0.35);
   --focus-border: rgba(0, 212, 255, 0.78);
 
+  /* Section "AI Insight" : fond légèrement teinté cyan, distinct des données brutes du scanner */
+  --ai-bg: rgba(0, 212, 255, 0.05);
+  --ai-border: rgba(0, 212, 255, 0.3);
+
   /* Dégradés, lignes décoratives et grille de fond */
   --accent-gradient: linear-gradient(105deg, var(--green), #00d4c3 58%, var(--cyan));
   --accent-line: rgba(0, 245, 160, 0.3);
@@ -128,6 +132,9 @@
   --border-input: rgba(20, 40, 55, 0.25);
   --border-danger: rgba(192, 26, 63, 0.35);
   --focus-border: rgba(0, 115, 154, 0.8);
+
+  --ai-bg: rgba(0, 115, 154, 0.06);
+  --ai-border: rgba(0, 115, 154, 0.3);
 
   --accent-gradient: linear-gradient(105deg, #007a52, #007a80 58%, #00739a);
   --accent-line: rgba(0, 122, 82, 0.3);

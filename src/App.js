@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import ScanForm from './components/ScanForm';
 import ResultsPanel from './components/ResultsPanel';
@@ -10,8 +10,16 @@ import ResetPasswordForm from './components/ResetPasswordForm';
 import EmailVerificationForm from './components/EmailVerificationForm';
 import ThemeToggle from './components/ThemeToggle';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { createScan, getScan, setFindingFixed, UNAUTHORIZED_EVENT } from './api/scansApi';
+import { createScan, getAiStatus, getScan, setFindingFixed, UNAUTHORIZED_EVENT } from './api/scansApi';
 import { getEmailVerificationToken, getResetPasswordToken } from './utils/url';
+
+// Polling des explications IA : une vérification toutes les 3 s, 10 au maximum (30 s).
+const AI_POLL_INTERVAL_MS = 3000;
+const AI_POLL_MAX_ATTEMPTS = 10;
+
+function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
 
 function AppContent() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -23,11 +31,69 @@ function AppContent() {
   const [scanResult, setScanResult] = useState(null);
   const [status, setStatus] = useState('idle');
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [aiLoading, setAiLoading] = useState(false);
+  // Numéro du polling en cours : l'incrémenter annule le polling précédent
+  // (nouveau scan, autre scan ouvert, scan supprimé, composant démonté).
+  const aiPollIdRef = useRef(0);
 
   useEffect(() => {
     window.addEventListener(UNAUTHORIZED_EVENT, logout);
     return () => window.removeEventListener(UNAUTHORIZED_EVENT, logout);
   }, [logout]);
+
+  // Au démontage ou à la déconnexion, on annule le polling pour ne jamais mettre à jour un écran disparu.
+  useEffect(() => () => {
+    aiPollIdRef.current += 1;
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      aiPollIdRef.current += 1;
+      setAiLoading(false);
+    }
+  }, [isAuthenticated]);
+
+  const stopAiPolling = () => {
+    aiPollIdRef.current += 1;
+    setAiLoading(false);
+  };
+
+  // Attend que le backend ait fini les explications IA, puis recharge le scan complet.
+  // Toute erreur est absorbée : au pire, le scan reste affiché sans explications.
+  const pollAiExplanations = async (scanId) => {
+    const pollId = aiPollIdRef.current + 1;
+    aiPollIdRef.current = pollId;
+    const isCurrentPoll = () => aiPollIdRef.current === pollId;
+    setAiLoading(true);
+
+    for (let attempt = 1; attempt <= AI_POLL_MAX_ATTEMPTS; attempt += 1) {
+      await wait(AI_POLL_INTERVAL_MS);
+      if (!isCurrentPoll()) return;
+
+      try {
+        const aiStatus = await getAiStatus(scanId);
+        if (aiStatus?.ready) break;
+      } catch (requestError) {
+        // Session expirée, accès refusé ou scan supprimé : inutile de continuer.
+        if ([401, 403, 404].includes(requestError.status)) {
+          if (isCurrentPoll()) setAiLoading(false);
+          return;
+        }
+        // Serveur momentanément injoignable : on réessaie à la tentative suivante.
+      }
+    }
+
+    if (!isCurrentPoll()) return;
+
+    try {
+      const updatedScan = await getScan(scanId);
+      if (isCurrentPoll()) setScanResult(updatedScan);
+    } catch (requestError) {
+      // Rechargement impossible : on garde le scan déjà affiché, sans message inquiétant.
+    } finally {
+      if (isCurrentPoll()) setAiLoading(false);
+    }
+  };
 
   const handleStartScan = async () => {
     const cleanedUrl = targetUrl.trim();
@@ -44,21 +110,30 @@ function AppContent() {
 
     setError('');
     setStatus('loading');
+    stopAiPolling();
 
     try {
       const scan = await createScan(cleanedUrl);
       setScanResult(scan);
       setStatus('results');
       setHistoryRefreshKey((key) => key + 1);
+
+      // Les explications IA arrivent plus tard : on les attend seulement s'il y a des findings sans explication.
+      const needsAi = scan?.findings?.some((finding) => !finding.aiExplanation);
+      if (scan?._id && needsAi) {
+        pollAiExplanations(scan._id);
+      }
     } catch (requestError) {
       setError(requestError.message);
       setStatus('error');
     }
   };
 
+  // Scan ouvert depuis l'historique : pas de polling, l'IA a déjà terminé depuis longtemps.
   const handleSelectScan = async (scanId) => {
     setError('');
     setStatus('loading');
+    stopAiPolling();
 
     try {
       const scan = await getScan(scanId);
@@ -92,6 +167,7 @@ function AppContent() {
 
   const handleDeleteScan = (scanId) => {
     if (scanResult?._id === scanId) {
+      stopAiPolling();
       setScanResult(null);
       setStatus('idle');
     }
@@ -211,7 +287,7 @@ function AppContent() {
         />
 
         {status === 'loading' && <p className="loading-message">Loading scan...</p>}
-        <ResultsPanel scan={scanResult} onSetFindingFixed={handleSetFindingFixed} />
+        <ResultsPanel scan={scanResult} aiLoading={aiLoading} onSetFindingFixed={handleSetFindingFixed} />
       </main>
     </div>
   );

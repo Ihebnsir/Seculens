@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import SeverityBadge from './SeverityBadge';
+import AiInsight from './AiInsight';
 
 // Transforme une clé technique en libellé lisible : "setCookieCount" devient "Set cookie count".
 function formatEvidenceKey(key) {
@@ -86,6 +87,8 @@ function FindingCard({ finding, onSetFixed }) {
           </dl>
         </div>
       )}
+
+      <AiInsight explanation={finding.aiExplanation} />
 
       <p className="finding-description">{finding.description}</p>
       <p className="finding-remediation">
