@@ -13,9 +13,10 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { createScan, getAiStatus, getScan, setFindingFixed, UNAUTHORIZED_EVENT } from './api/scansApi';
 import { getEmailVerificationToken, getResetPasswordToken } from './utils/url';
 
-// Polling des explications IA : une vérification toutes les 3 s, 10 au maximum (30 s).
+// Polling des explications IA : une vérification toutes les 3 s, 20 au maximum (60 s).
+// 60 s laissent le temps au backend de réessayer puis de basculer sur le modèle de secours.
 const AI_POLL_INTERVAL_MS = 3000;
-const AI_POLL_MAX_ATTEMPTS = 10;
+const AI_POLL_MAX_ATTEMPTS = 20;
 
 function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
