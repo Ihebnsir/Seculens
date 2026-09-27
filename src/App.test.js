@@ -251,7 +251,7 @@ test('polls the AI status after a scan, survives a network error, then shows the
     cwe: 'CWE-693', evidence: { header: 'Content-Security-Policy' }, description: 'No CSP.',
     remediation: 'Add a CSP.', fixed: false, aiExplanation: null
   };
-  const scan = { _id: 'scan-1', target: 'https://example.com', status: 200, score: 80, findings: [finding] };
+  const scan = { _id: 'scan-1', target: 'https://example.com', status: 200, score: 80, scannerVersion: '1.0', findings: [finding] };
   const explainedScan = {
     ...scan,
     findings: [{
@@ -282,6 +282,7 @@ test('polls the AI status after a scan, survives a network error, then shows the
   fireEvent.click(screen.getByRole('button', { name: 'Start Scan' }));
 
   expect(await screen.findByText('CSP missing')).toBeInTheDocument();
+  expect(screen.getByText('Scanner v1.0')).toBeInTheDocument();
   expect(screen.getByText('AI is analyzing these findings...')).toBeInTheDocument();
   expect(screen.queryByText('AI Insight')).not.toBeInTheDocument();
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { deleteScan, getScans } from '../api/scansApi';
 import { formatScanDate } from '../utils/date';
+import { formatScannerVersion } from '../utils/scanner';
 
 function ScanHistory({ refreshKey, onSelectScan, onDeleteScan }) {
   const [scans, setScans] = useState([]);
@@ -71,6 +72,7 @@ function ScanHistory({ refreshKey, onSelectScan, onDeleteScan }) {
                 <span>Score: {scan.score ?? 'N/A'}</span>
                 <span>{formatScanDate(scan.createdAt)}</span>
                 <span>{scan.findingsCount ?? 0} findings</span>
+                <span className="scanner-version">{formatScannerVersion(scan.scannerVersion)}</span>
               </button>
               <button
                 type="button"

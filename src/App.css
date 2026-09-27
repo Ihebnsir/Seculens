@@ -481,6 +481,17 @@
   font-size: 0.8rem;
 }
 
+/* Version du scanner : texte discret, en monospace comme les autres infos techniques. */
+.scanner-version {
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+
+.history-select .scanner-version {
+  font-size: 0.72rem;
+}
+
 /* ---------- Résultats ---------- */
 
 .results-header {

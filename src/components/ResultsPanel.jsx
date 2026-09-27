@@ -1,6 +1,7 @@
 import ScoreCard from './ScoreCard';
 import FindingCard from './FindingCard';
 import { formatScanDate } from '../utils/date';
+import { formatScannerVersion } from '../utils/scanner';
 
 function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
   if (!scan) {
@@ -31,6 +32,7 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
         <div className="scan-meta">
           <span>Status: {scan.status}</span>
           <span>Scanned: {formatScanDate(scan.createdAt)}</span>
+          <span className="scanner-version">{formatScannerVersion(scan.scannerVersion)}</span>
         </div>
       </div>
 
