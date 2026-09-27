@@ -49,13 +49,15 @@ function ResetPasswordForm({ token, onRequestNewLink }) {
           <p className="success-message" role="status">
             Password updated. You can now log in.
           </p>
-          <button
-            className="primary-button auth-submit"
-            type="button"
-            onClick={() => { window.location.href = '/'; }}
-          >
-            Back to login
-          </button>
+          <p className="auth-switch-line">
+            <button
+              className="text-button"
+              type="button"
+              onClick={() => { window.location.href = '/'; }}
+            >
+              Back to login
+            </button>
+          </p>
         </div>
       ) : (
         <form className="auth-form" onSubmit={handleSubmit}>

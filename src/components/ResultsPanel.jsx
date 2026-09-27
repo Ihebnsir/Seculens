@@ -1,15 +1,6 @@
 import ScoreCard from './ScoreCard';
 import FindingCard from './FindingCard';
-
-function formatScanDate(dateValue) {
-  // Le champ createdAt peut être absent ou contenir une date invalide.
-  if (!dateValue) {
-    return 'Date indisponible';
-  }
-
-  const date = new Date(dateValue);
-  return Number.isNaN(date.getTime()) ? 'Date indisponible' : date.toLocaleString();
-}
+import { formatScanDate } from '../utils/date';
 
 function ResultsPanel({ scan, onSetFindingFixed }) {
   if (!scan) {

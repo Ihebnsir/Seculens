@@ -66,7 +66,7 @@ function RegisterForm({ onSwitchToLogin }) {
         <div className="auth-form">
           {resendMessage && <p className="success-message" role="status">{resendMessage}</p>}
           {resendError && <p className="error-message" role="alert">{resendError}</p>}
-          <button className="primary-button auth-submit" type="button" onClick={handleResend} disabled={resendLoading}>
+          <button className="secondary-button auth-submit" type="button" onClick={handleResend} disabled={resendLoading}>
             {resendLoading ? 'Sending...' : 'Resend email'}
           </button>
         </div>

@@ -4,16 +4,57 @@
   box-sizing: border-box;
 }
 
+/* Toutes les couleurs et tous les espacements du thème sont définis ici, une seule fois. */
 :root {
+  /* Fonds */
   --page: #0a0e14;
-  --panel: #11161f;
-  --panel-raised: #151c27;
-  --line: rgba(0, 245, 160, 0.18);
-  --line-blue: rgba(0, 212, 255, 0.22);
+  --panel: rgba(17, 22, 31, 0.96);
+  --surface: #0d131c;
+  --input-bg: #0b1017;
+
+  /* Textes */
   --text: #e8f0f3;
+  --text-soft: #b8c8ce;
   --muted: #8b9aa6;
-  --cyan: #00d4ff;
+  --faint: #778691;
+
+  /* Accents néon */
   --green: #00f5a0;
+  --cyan: #00d4ff;
+  --cyan-light: #75eaff;
+  --on-accent: #04120f;
+
+  /* Couleurs d'état, partagées entre les badges, le score et les messages */
+  --danger: #ff6685;
+  --danger-soft: #ff8197;
+  --orange: #ff9b68;
+  --warning: #f0cb4c;
+  --sev-low: #43dfff;
+  --sev-info: #4df5b2;
+
+  /* Bordures */
+  --line: rgba(0, 245, 160, 0.36);
+  --line-strong: rgba(0, 245, 160, 0.52);
+  --line-blue: rgba(0, 212, 255, 0.22);
+  --border-subtle: rgba(132, 157, 170, 0.15);
+  --border-input: rgba(132, 157, 170, 0.24);
+  --border-danger: rgba(255, 98, 130, 0.35);
+
+  /* Échelle d'espacement : multiples de 4px */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-14: 56px;
+
+  --radius: 4px;
+  --radius-panel: 5px;
+  --tap-size: 44px;
+  --transition: 160ms ease;
+
   --mono: 'JetBrains Mono', 'Fira Code', monospace;
   --sans: 'Inter', sans-serif;
 }

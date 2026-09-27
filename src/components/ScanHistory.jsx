@@ -1,15 +1,6 @@
 import { useEffect, useState } from 'react';
 import { deleteScan, getScans } from '../api/scansApi';
-
-function formatScanDate(dateValue) {
-  // Le backend stocke la date du scan dans createdAt.
-  if (!dateValue) {
-    return 'Date indisponible';
-  }
-
-  const date = new Date(dateValue);
-  return Number.isNaN(date.getTime()) ? 'Date indisponible' : date.toLocaleString();
-}
+import { formatScanDate } from '../utils/date';
 
 function ScanHistory({ refreshKey, onSelectScan, onDeleteScan }) {
   const [scans, setScans] = useState([]);
@@ -83,7 +74,7 @@ function ScanHistory({ refreshKey, onSelectScan, onDeleteScan }) {
               </button>
               <button
                 type="button"
-                className="history-delete"
+                className="danger-button"
                 onClick={() => handleDelete(scan)}
                 aria-label={`Delete scan for ${scan.target}`}
               >
