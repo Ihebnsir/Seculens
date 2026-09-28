@@ -2,6 +2,8 @@ import ScoreCard from './ScoreCard';
 import FindingCard from './FindingCard';
 import { formatScanDate } from '../utils/date';
 import { formatScannerVersion } from '../utils/scanner';
+import { sortFindingsBySeverity } from '../utils/severity';
+import BreakableUrl from './BreakableUrl';
 
 function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
   if (!scan) {
@@ -20,21 +22,24 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
     );
   }
 
-  const findingsCount = scan.findings?.length || 0;
+  // Affichage seulement : les findings les plus graves (et encore ouverts) passent en premier.
+  const sortedFindings = sortFindingsBySeverity(scan.findings);
 
   return (
     <section className="results-panel" aria-live="polite">
+      {/* 1. De quoi parle-t-on : la cible et le contexte du scan. */}
       <div className="results-header">
-        <div>
-          <h2>Results</h2>
-          <p className="scan-target">Target: {scan.target}</p>
-        </div>
+        <h2>Results</h2>
         <div className="scan-meta">
-          <span>Status: {scan.status}</span>
-          <span>Scanned: {formatScanDate(scan.createdAt)}</span>
+          <span>HTTP {scan.status}</span>
+          <span>{formatScanDate(scan.createdAt)}</span>
           <span className="scanner-version">{formatScannerVersion(scan.scannerVersion)}</span>
         </div>
       </div>
+      <p className="scan-target"><BreakableUrl url={scan.target} /></p>
+
+      {/* 2. Le verdict : score et répartition par gravité. */}
+      <ScoreCard score={scan.score} findings={scan.findings} />
 
       {/* Message discret : les findings restent visibles et utilisables pendant l'analyse IA. */}
       {aiLoading && (
@@ -44,16 +49,12 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
         </p>
       )}
 
-      <ScoreCard score={scan.score} />
-
-      <div className="summary-box">
-        <p>
-          <strong>{findingsCount}</strong> findings detected across the target surface.
-        </p>
-      </div>
-
+      {/* 3. Le détail, du plus grave au moins grave. */}
+      <h3 className="findings-heading">
+        Findings <span className="findings-count">{sortedFindings.length}</span>
+      </h3>
       <div className="findings-list">
-        {scan.findings.map((finding) => (
+        {sortedFindings.map((finding) => (
           <FindingCard
             key={finding._id}
             finding={finding}

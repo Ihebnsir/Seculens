@@ -34,7 +34,7 @@
 .app-header,
 .app-main {
   position: relative;
-  width: min(100%, 1120px);
+  width: min(100%, 1200px);
   margin-right: auto;
   margin-left: auto;
 }
@@ -74,9 +74,32 @@
 }
 
 .app-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-6);
+}
+
+.workspace-main {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+  min-width: 0;
+}
+
+/* Ordinateur : les résultats occupent la colonne principale, l'historique reste visible à droite
+   pendant qu'on fait défiler les findings. */
+@media (min-width: 1024px) {
+  .app-main {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+
+  .workspace-side {
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + var(--space-6));
+    max-height: calc(100vh - 2 * var(--space-6));
+    overflow-y: auto;
+  }
 }
 
 /* ---------- Barre du compte ---------- */
@@ -88,10 +111,6 @@
   min-width: 0;
   color: var(--text-soft);
   font-size: var(--fs-md);
-}
-
-.account-bar > span {
-  overflow-wrap: anywhere;
 }
 
 .user-avatar {
@@ -111,8 +130,13 @@
 }
 
 .account-email {
+  min-width: 0;
+  overflow: hidden;
   color: var(--muted);
   font-size: var(--fs-sm);
+  /* Une seule ligne : l'adresse trop longue finit par des points de suspension (complète au survol). */
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ---------- Panneaux ---------- */
@@ -135,8 +159,7 @@
 /* Cartes internes (score, findings, preuves, résumé) : fond plus sombre, bordure discrète. */
 .score-card,
 .finding-card,
-.evidence-box,
-.summary-box {
+.evidence-box {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-panel);
   background: var(--surface);
@@ -238,6 +261,21 @@
 .danger-button:disabled {
   cursor: wait;
   opacity: 0.62;
+}
+
+.icon-button {
+  flex: 0 0 var(--tap-size);
+  width: var(--tap-size);
+  padding: 0;
+}
+
+.button-icon {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
 }
 
 .logout-arrow {
@@ -445,19 +483,34 @@
 }
 
 .history-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: var(--space-3) 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-panel);
+  transition: background-color var(--transition), box-shadow var(--transition);
+}
+
+.history-item + .history-item {
   border-top: 1px solid var(--border-subtle);
+}
+
+/* Le scan affiché à gauche est repéré dans la liste par un fond et un trait cyan. */
+.history-item.is-active {
+  background: var(--ai-bg);
+  box-shadow: inset 2px 0 0 var(--cyan);
+}
+
+.history-item.is-active + .history-item {
+  border-top-color: transparent;
 }
 
 .history-select {
   display: flex;
-  flex: 1;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
   min-width: 0;
   padding: var(--space-1) 0;
   border: 0;
@@ -474,11 +527,26 @@
 
 .history-select strong {
   flex-basis: 100%;
-  overflow-wrap: anywhere;
+  /* Coupure aux <wbr> de BreakableUrl ; au milieu d'un mot seulement en dernier recours. */
+  overflow-wrap: break-word;
 }
 
 .history-select span {
   font-size: var(--fs-sm);
+}
+
+.history-select strong {
+  font-size: var(--fs-sm);
+}
+
+.history-score {
+  font-weight: 700;
+}
+
+.history-score .history-score-max {
+  color: var(--faint);
+  font-size: var(--fs-xs);
+  font-weight: 400;
 }
 
 /* Version du scanner : texte discret, en monospace comme les autres infos techniques. */
@@ -496,10 +564,11 @@
 
 .results-header {
   display: flex;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  gap: var(--space-4);
-  margin-bottom: var(--space-4);
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-2);
 }
 
 .results-header h2 {
@@ -507,27 +576,178 @@
 }
 
 .scan-target {
-  margin: var(--space-2) 0 0;
-  font-size: var(--fs-md);
-  /* Les URLs longues passent à la ligne au lieu de déborder. */
-  overflow-wrap: anywhere;
+  margin: 0 0 var(--space-5);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  /* Les URLs longues passent à la ligne après / . ? & = (voir BreakableUrl). */
+  overflow-wrap: break-word;
 }
 
 .scan-meta {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
   color: var(--muted);
   font-size: var(--fs-sm);
 }
 
 .score-card {
-  margin-bottom: var(--space-5);
-  padding: var(--space-4) var(--space-5);
+  --gauge-size: 152px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+  padding: var(--space-5) var(--space-6);
+}
+
+.score-gauge {
+  position: relative;
+  display: grid;
+  flex: 0 0 var(--gauge-size);
+  width: var(--gauge-size);
+  aspect-ratio: 1;
+  place-items: center;
+}
+
+.score-gauge svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Graduation de la bague : traits fins, plus marqués tous les 25 points. */
+.gauge-tick {
+  stroke: var(--border-input);
+  stroke-width: 1;
+}
+
+.gauge-tick-major {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+
+.gauge-track {
+  fill: none;
+  stroke: var(--border-subtle);
+  stroke-width: 8;
+}
+
+/* L'arc prend la couleur du verdict (score-good / medium / low) via currentColor. */
+.gauge-arc {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 8;
+  filter: var(--gauge-glow);
+}
+
+/* Le chiffre est dimensionné d'après la jauge : c'est un élément graphique, pas du texte courant. */
+.gauge-value {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.gauge-value .score-value {
+  font-size: calc(var(--gauge-size) * 0.27);
+}
+
+.gauge-max {
+  margin-top: var(--space-1);
+  color: var(--faint);
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+}
+
+.score-summary {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.score-verdict {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.severity-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breakdown-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text-soft);
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Pastille de couleur : même code couleur que les badges de sévérité. */
+.breakdown-chip::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--chip-color, var(--muted));
+  content: "";
+}
+
+.breakdown-critical { --chip-color: var(--danger); }
+.breakdown-high { --chip-color: var(--orange); }
+.breakdown-medium { --chip-color: var(--warning); }
+.breakdown-low { --chip-color: var(--sev-low); }
+.breakdown-info { --chip-color: var(--sev-info); }
+.breakdown-fixed { --chip-color: transparent; }
+.breakdown-fixed::before { box-shadow: inset 0 0 0 1.5px var(--green); }
+.breakdown-none::before { display: none; }
+
+.breakdown-count {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.score-hint {
+  margin: 0;
+  color: var(--faint);
+  font-size: var(--fs-xs);
+}
+
+.findings-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.findings-count {
+  padding: 2px var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  color: var(--text);
 }
 
 .score-label {
-  margin: 0 0 var(--space-2);
+  margin: 0;
   color: var(--muted);
   font-size: var(--fs-xs);
   letter-spacing: 0.08em;
@@ -542,16 +762,6 @@
 .score-good { color: var(--green); }
 .score-medium { color: var(--warning); }
 .score-low { color: var(--danger); }
-
-.summary-box {
-  margin-bottom: var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  color: var(--text-soft);
-}
-
-.summary-box p {
-  margin: 0;
-}
 
 .findings-list {
   display: grid;
@@ -853,6 +1063,7 @@
 .empty-state h2,
 .target-label,
 .score-label,
+.findings-heading,
 .evidence-title,
 .ai-insight-title,
 .ai-insight-label,
@@ -866,7 +1077,6 @@
 .finding-remediation,
 .ai-insight-text,
 .ai-insight-steps,
-.summary-box p,
 .warning-text {
   max-width: var(--measure);
 }
@@ -987,7 +1197,8 @@
     min-width: 120px;
   }
 
-  .app-main {
+  .app-main,
+  .workspace-main {
     gap: var(--space-4);
   }
 
@@ -1026,10 +1237,6 @@
 /* ---------- Petit mobile (≤ 600px) ---------- */
 
 @media (max-width: 600px) {
-  .results-header {
-    flex-direction: column;
-  }
-
   /* Le badge reste à sa taille naturelle au lieu de s'étirer en pleine largeur. */
   .finding-header {
     flex-direction: column;
@@ -1038,19 +1245,12 @@
   }
 
   /* Historique : les infos du scan s'empilent, Delete garde une vraie taille de bouton. */
-  .history-item {
+  /* La jauge passe au-dessus du verdict pour laisser la place aux pastilles. */
+  .score-card {
+    --gauge-size: 128px;
     flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-2);
-  }
-
-  .history-select {
-    flex-direction: column;
-    gap: var(--space-1);
-  }
-
-  .history-item .danger-button {
-    align-self: flex-start;
+    align-items: flex-start;
+    gap: var(--space-4);
   }
 
   .evidence-row {
@@ -1074,7 +1274,7 @@
   }
 
   .score-card {
-    padding: var(--space-3) var(--space-4);
+    padding: var(--space-4);
   }
 
   .auth-identity h2 {

@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { deleteScan, getScans } from '../api/scansApi';
 import { formatScanDate } from '../utils/date';
 import { formatScannerVersion } from '../utils/scanner';
+import { getScoreTone } from '../utils/score';
+import BreakableUrl from './BreakableUrl';
 
-function ScanHistory({ refreshKey, onSelectScan, onDeleteScan }) {
+function ScanHistory({ refreshKey, activeScanId, onSelectScan, onDeleteScan }) {
   const [scans, setScans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -62,25 +64,35 @@ function ScanHistory({ refreshKey, onSelectScan, onDeleteScan }) {
         <ul className="history-list">
           {scans.map((scan) => (
             // La liste utilise le format résumé, dont l'identifiant est id.
-            <li className="history-item" key={scan.id}>
+            <li
+              className={`history-item${scan.id === activeScanId ? ' is-active' : ''}`}
+              key={scan.id}
+            >
               <button
                 type="button"
                 className="history-select"
                 onClick={() => onSelectScan(scan.id)}
+                aria-current={scan.id === activeScanId ? 'true' : undefined}
               >
-                <strong>{scan.target}</strong>
-                <span>Score: {scan.score ?? 'N/A'}</span>
-                <span>{formatScanDate(scan.createdAt)}</span>
+                <strong><BreakableUrl url={scan.target} /></strong>
+                <span className={`history-score ${getScoreTone(scan.score).className}`}>
+                  {scan.score ?? 'N/A'}<span className="history-score-max">/100</span>
+                </span>
                 <span>{scan.findingsCount ?? 0} findings</span>
+                <span>{formatScanDate(scan.createdAt)}</span>
                 <span className="scanner-version">{formatScannerVersion(scan.scannerVersion)}</span>
               </button>
+              {/* Bouton-icône de 44px : laisse la largeur de la colonne à l'URL du scan. */}
               <button
                 type="button"
-                className="danger-button"
+                className="danger-button icon-button"
                 onClick={() => handleDelete(scan)}
                 aria-label={`Delete scan for ${scan.target}`}
+                title="Delete scan"
               >
-                Delete
+                <svg className="button-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5" />
+                </svg>
               </button>
             </li>
           ))}

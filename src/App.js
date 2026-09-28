@@ -263,7 +263,7 @@ function AppContent() {
           <span className="user-avatar" aria-hidden="true">
             {user?.email?.trim()?.charAt(0)?.toUpperCase() || '?'}
           </span>
-          <span className="account-email">{user?.email}</span>
+          <span className="account-email" title={user?.email}>{user?.email}</span>
           <ThemeToggle />
           <button type="button" className="secondary-button" onClick={logout}>
             Log out
@@ -272,23 +272,30 @@ function AppContent() {
         </div>
       </header>
 
+      {/* Colonne principale (formulaire + résultats) puis historique : sur mobile, l'ordre du code
+          fait passer les résultats avant l'historique ; sur ordinateur, l'historique passe à droite. */}
       <main className="app-main">
-        <ScanForm
-          targetUrl={targetUrl}
-          onUrlChange={setTargetUrl}
-          onSubmit={handleStartScan}
-          error={error}
-          loading={status === 'loading'}
-        />
+        <div className="workspace-main">
+          <ScanForm
+            targetUrl={targetUrl}
+            onUrlChange={setTargetUrl}
+            onSubmit={handleStartScan}
+            error={error}
+            loading={status === 'loading'}
+          />
 
-        <ScanHistory
-          refreshKey={historyRefreshKey}
-          onSelectScan={handleSelectScan}
-          onDeleteScan={handleDeleteScan}
-        />
+          {status === 'loading' && <p className="loading-message">Loading scan...</p>}
+          <ResultsPanel scan={scanResult} aiLoading={aiLoading} onSetFindingFixed={handleSetFindingFixed} />
+        </div>
 
-        {status === 'loading' && <p className="loading-message">Loading scan...</p>}
-        <ResultsPanel scan={scanResult} aiLoading={aiLoading} onSetFindingFixed={handleSetFindingFixed} />
+        <aside className="workspace-side">
+          <ScanHistory
+            refreshKey={historyRefreshKey}
+            activeScanId={scanResult?._id}
+            onSelectScan={handleSelectScan}
+            onDeleteScan={handleDeleteScan}
+          />
+        </aside>
       </main>
     </div>
   );
