@@ -253,6 +253,7 @@ function AppContent() {
           <ScanHistory
             refreshKey={historyRefreshKey}
             activeScanId={scanResult?._id}
+            activeScanScore={scanResult?.score}
             onSelectScan={handleSelectScan}
             onDeleteScan={handleDeleteScan}
           />

@@ -29,7 +29,7 @@ function getEvidenceEntries(evidence) {
   return Object.entries(evidence);
 }
 
-function FindingCard({ finding, onSetFixed }) {
+function FindingCard({ finding, onSetFixed, appearIndex = 0 }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const evidenceEntries = getEvidenceEntries(finding.evidence);
@@ -56,7 +56,10 @@ function FindingCard({ finding, onSetFixed }) {
   const severityClass = SEVERITY_ORDER.includes(finding.severity) ? finding.severity : 'info';
 
   return (
-    <article className={`finding-card finding-${severityClass}${finding.fixed ? ' finding-fixed' : ''}`}>
+    <article
+      className={`finding-card finding-${severityClass}${finding.fixed ? ' finding-fixed' : ''}`}
+      style={{ '--appear-index': appearIndex }}
+    >
       {/* Niveau 1, toujours visible : gravité, titre et description sur une ligne. */}
       <div className="finding-header">
         <div className="finding-title-line">

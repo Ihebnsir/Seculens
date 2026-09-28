@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import ScoreCard from './ScoreCard';
 import FindingCard from './FindingCard';
 import { formatScanDate } from '../utils/date';
@@ -6,7 +7,23 @@ import { sortFindingsBySeverity } from '../utils/severity';
 import BreakableUrl from './BreakableUrl';
 import LensMark from './LensMark';
 
+// Apparition en cascade : chaque élément démarre 50 ms après le précédent, plafonné pour ne jamais faire attendre.
+const CASCADE_MAX_INDEX = 8;
+const CASCADE_DURATION_MS = 900;
+
 function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
+  // La cascade ne joue qu'à l'ouverture d'un scan. Ensuite la classe est retirée : une carte déplacée
+  // par le tri (après "Mark as fixed") ou un rechargement des explications IA ne rejoue pas l'animation.
+  const scanId = scan?._id;
+  const [settledScanId, setSettledScanId] = useState(null);
+  const isAppearing = Boolean(scanId) && scanId !== settledScanId;
+
+  useEffect(() => {
+    if (!scanId) return undefined;
+    const timer = setTimeout(() => setSettledScanId(scanId), CASCADE_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [scanId]);
+
   if (!scan) {
     return (
       <section className="results-panel empty-state" aria-live="polite">
@@ -24,7 +41,7 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
   const sortedFindings = sortFindingsBySeverity(scan.findings);
 
   return (
-    <section className="results-panel" aria-live="polite">
+    <section className={`results-panel${isAppearing ? ' is-appearing' : ''}`} aria-live="polite">
       {/* 1. De quoi parle-t-on : la cible et le contexte du scan. */}
       <div className="results-header">
         <h2>Results</h2>
@@ -37,7 +54,8 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
       <p className="scan-target"><BreakableUrl url={scan.target} /></p>
 
       {/* 2. Le verdict : score et répartition par gravité. */}
-      <ScoreCard score={scan.score} findings={scan.findings} />
+      {/* key : un autre scan remonte la carte, donc pas de flash du score en changeant de scan. */}
+      <ScoreCard key={scan._id} score={scan.score} findings={scan.findings} />
 
       {/* Message discret : les findings restent visibles et utilisables pendant l'analyse IA. */}
       {aiLoading && (
@@ -52,10 +70,11 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
         Findings <span className="findings-count">{sortedFindings.length}</span>
       </h3>
       <div className="findings-list">
-        {sortedFindings.map((finding) => (
+        {sortedFindings.map((finding, index) => (
           <FindingCard
             key={finding._id}
             finding={finding}
+            appearIndex={Math.min(index + 1, CASCADE_MAX_INDEX)}
             onSetFixed={onSetFindingFixed}
           />
         ))}

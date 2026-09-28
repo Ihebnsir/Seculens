@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { countFindings, SEVERITY_ORDER } from '../utils/severity';
 import { getScoreTone } from '../utils/score';
 
@@ -52,8 +53,22 @@ function ScoreCard({ score, findings }) {
   const { open, fixed } = countFindings(findings);
   const openSeverities = SEVERITY_ORDER.filter((severity) => open[severity] > 0);
 
+  // Flash discret quand le score change (finding coché ou décoché "Fixed"). Chaque changement donne
+  // une nouvelle clé à l'overlay, ce qui rejoue son animation. Le parent remonte la carte quand on change
+  // de scan (key), donc ouvrir un autre scan ne déclenche pas de flash.
+  const [flashCount, setFlashCount] = useState(0);
+  const previousScore = useRef(score);
+
+  useEffect(() => {
+    if (previousScore.current !== score) {
+      previousScore.current = score;
+      setFlashCount((count) => count + 1);
+    }
+  }, [score]);
+
   return (
     <div className="score-card">
+      {flashCount > 0 && <span key={flashCount} className="score-flash" aria-hidden="true" />}
       <ScoreGauge score={score} toneClass={tone.className} />
 
       <div className="score-summary">
