@@ -770,73 +770,206 @@
 
 /* ---------- Carte de finding ---------- */
 
+/* Bande de gravité à gauche : sa couleur vient de la classe finding-<gravité>. */
 .finding-card {
-  padding: var(--space-5);
+  --finding-edge: var(--sev-info);
+  padding: var(--space-4) var(--space-5);
+  border-left: 4px solid var(--finding-edge);
 }
 
-.finding-fixed {
-  opacity: 0.58;
-}
+.finding-critical { --finding-edge: var(--danger); }
+.finding-high { --finding-edge: var(--orange); }
+.finding-medium { --finding-edge: var(--warning); }
+.finding-low { --finding-edge: var(--sev-low); }
+.finding-info { --finding-edge: var(--sev-info); }
 
-.finding-fixed .finding-header h3,
-.finding-fixed .finding-description,
-.finding-fixed .finding-remediation {
-  text-decoration: line-through;
-}
-
+/* Niveau 1 : badge et titre à gauche, case "Mark as fixed" à droite. */
 .finding-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
-  margin-bottom: var(--space-3);
+  gap: var(--space-2) var(--space-4);
 }
 
-.finding-header > div {
+/* Le badge reste à gauche du titre même sur mobile : c'est le titre qui revient à la ligne. */
+.finding-title-line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
   min-width: 0;
 }
 
-.finding-rule {
-  margin: 0 0 var(--space-1);
-  font-size: var(--fs-xs);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.finding-title-line .severity-badge {
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
-.finding-header h3 {
+.finding-title-line h3 {
+  flex: 0 1 auto;
+  min-width: 0;
   margin: 0;
   color: var(--text);
   font-size: var(--fs-lg);
+  line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+/* Description sur une seule ligne tant que les détails sont fermés, en entier une fois ouverts. */
+.finding-description {
+  display: -webkit-box;
+  margin: var(--space-1) 0 0;
+  overflow: hidden;
+  color: var(--text-soft);
+  line-height: var(--leading-prose);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.finding-card:has(.finding-details[open]) .finding-description {
+  display: block;
+  -webkit-line-clamp: unset;
+}
+
+/* État corrigé : étiquette "Fixed" et texte barré, sans baisse d'opacité (le contraste reste intact). */
+.finding-fixed {
+  --finding-edge: var(--border-input);
+}
+
+.finding-fixed .finding-title-line h3,
+.finding-fixed .finding-description {
+  color: var(--text-soft);
+  text-decoration: line-through;
+  text-decoration-color: var(--muted);
+}
+
+/* En inline-flex, l'étiquette n'hérite pas du trait barré du titre. */
+.fixed-tag {
+  display: inline-flex;
+  margin-left: var(--space-2);
+  vertical-align: 2px;
+  line-height: 1;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--radius);
+  color: var(--green);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.fixed-tag::before {
+  content: '✓';
+}
+
+/* Niveau 2 : bouton natif "Show details / Hide details" avec un chevron dessiné en CSS. */
+.finding-details {
+  margin-top: var(--space-2);
+}
+
+.finding-details summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-size);
+  color: var(--cyan);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+}
+
+.finding-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.finding-details summary::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform var(--transition);
+}
+
+.finding-details[open] summary::before {
+  transform: translateY(1px) rotate(-135deg);
+}
+
+.finding-details summary:hover {
+  color: var(--cyan-light);
+}
+
+.finding-details summary:focus-visible {
+  outline: 2px solid var(--focus-border);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+.details-open-label,
+.finding-details[open] .details-closed-label {
+  display: none;
+}
+
+.finding-details[open] .details-open-label {
+  display: inline;
+}
+
+.finding-details-body {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
 }
 
 .finding-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
   color: var(--muted);
   font-size: var(--fs-sm);
 }
 
-.finding-description,
+.finding-rule {
+  font-size: var(--fs-sm);
+  letter-spacing: 0.06em;
+}
+
+/* Remédiation : même cadre que les preuves, titre vert pour la distinguer de l'AI Insight (cyan). */
+.remediation-box {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-panel);
+  background: var(--panel);
+}
+
+.remediation-title {
+  margin: 0 0 var(--space-2);
+  color: var(--green);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .finding-remediation {
   margin: 0;
   color: var(--text);
   line-height: var(--leading-prose);
-}
-
-.finding-remediation {
-  margin-top: var(--space-3);
+  overflow-wrap: anywhere;
 }
 
 /* Case "Mark as fixed" redessinée aux couleurs du thème. */
 .fixed-control {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   gap: var(--space-2);
   min-height: var(--tap-size);
-  margin: 0 0 var(--space-2);
+  margin: 0;
   color: var(--text-soft);
   font-size: var(--fs-md);
   cursor: pointer;
@@ -875,7 +1008,6 @@
 /* ---------- Bloc de preuves ---------- */
 
 .evidence-box {
-  margin-bottom: var(--space-3);
   padding: var(--space-3) var(--space-4);
 }
 
@@ -956,7 +1088,6 @@
 .ai-insight {
   display: grid;
   gap: var(--space-3);
-  margin-bottom: var(--space-3);
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--ai-border);
   border-left-width: 3px;
@@ -1065,8 +1196,11 @@
 .score-label,
 .findings-heading,
 .evidence-title,
+.remediation-title,
 .ai-insight-title,
 .ai-insight-label,
+.finding-details summary,
+.fixed-tag,
 .severity-badge {
   font-family: var(--mono);
   letter-spacing: 0.06em;
@@ -1237,7 +1371,7 @@
 /* ---------- Petit mobile (≤ 600px) ---------- */
 
 @media (max-width: 600px) {
-  /* Le badge reste à sa taille naturelle au lieu de s'étirer en pleine largeur. */
+  /* La case "Mark as fixed" passe sous le titre au lieu de l'écraser. */
   .finding-header {
     flex-direction: column;
     align-items: flex-start;

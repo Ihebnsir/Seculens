@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import SeverityBadge from './SeverityBadge';
 import AiInsight from './AiInsight';
+import { SEVERITY_ORDER } from '../utils/severity';
+
+// Gravités dont les détails sont dépliés à l'affichage ; low et info restent repliés.
+const OPEN_BY_DEFAULT = ['critical', 'high', 'medium'];
 
 // Transforme une clé technique en libellé lisible : "setCookieCount" devient "Set cookie count".
 function formatEvidenceKey(key) {
@@ -48,52 +52,73 @@ function FindingCard({ finding, onSetFixed }) {
     }
   };
 
-  return (
-    <article className={`finding-card${finding.fixed ? ' finding-fixed' : ''}`}>
-      <div className="finding-header">
-        <div>
-          <p className="finding-rule">{finding.ruleId}</p>
-          <h3>{finding.title}</h3>
-        </div>
-        <SeverityBadge severity={finding.severity} />
-      </div>
+  // La classe de gravité colore la bande à gauche de la carte.
+  const severityClass = SEVERITY_ORDER.includes(finding.severity) ? finding.severity : 'info';
 
-      <label className="fixed-control">
-        <input
-          type="checkbox"
-          checked={Boolean(finding.fixed)}
-          onChange={handleFixedChange}
-          disabled={saving}
-        />
-        Mark as fixed
-      </label>
+  return (
+    <article className={`finding-card finding-${severityClass}${finding.fixed ? ' finding-fixed' : ''}`}>
+      {/* Niveau 1, toujours visible : gravité, titre et description sur une ligne. */}
+      <div className="finding-header">
+        <div className="finding-title-line">
+          <SeverityBadge severity={finding.severity} />
+          {/* L'étiquette suit le texte du titre : elle passe à la ligne avec lui sur mobile. */}
+          <h3>
+            {finding.title}
+            {finding.fixed && <span className="fixed-tag">Fixed</span>}
+          </h3>
+        </div>
+
+        <label className="fixed-control">
+          <input
+            type="checkbox"
+            checked={Boolean(finding.fixed)}
+            onChange={handleFixedChange}
+            disabled={saving}
+          />
+          Mark as fixed
+        </label>
+      </div>
       {error && <p className="error-message">{error}</p>}
 
-      <div className="finding-meta">
-        <span>Confidence: {finding.confidence}</span>
-        <span className="finding-cwe">{finding.cwe}</span>
-      </div>
-
-      {evidenceEntries.length > 0 && (
-        <div className="evidence-box">
-          <p className="evidence-title">Evidence</p>
-          <dl className="evidence-list">
-            {evidenceEntries.map(([key, value]) => (
-              <div className="evidence-row" key={key}>
-                <dt>{formatEvidenceKey(key)}</dt>
-                <dd>{formatEvidenceValue(value)}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      )}
-
-      <AiInsight explanation={finding.aiExplanation} />
-
       <p className="finding-description">{finding.description}</p>
-      <p className="finding-remediation">
-        <strong>Remediation:</strong> {finding.remediation}
-      </p>
+
+      {/* Niveau 2 : élément <details> natif, ouvert et fermé par le navigateur sans JavaScript.
+          Ouvert d'office pour critical, high et medium tant que le finding n'est pas corrigé. */}
+      <details className="finding-details" open={OPEN_BY_DEFAULT.includes(severityClass) && !finding.fixed}>
+        <summary>
+          <span className="details-closed-label">Show details</span>
+          <span className="details-open-label">Hide details</span>
+        </summary>
+
+        <div className="finding-details-body">
+          <p className="finding-meta">
+            <span className="finding-rule">{finding.ruleId}</span>
+            <span className="finding-cwe">{finding.cwe}</span>
+            <span>Confidence: {finding.confidence}</span>
+          </p>
+
+          <AiInsight explanation={finding.aiExplanation} />
+
+          <div className="remediation-box">
+            <p className="remediation-title">Remediation</p>
+            <p className="finding-remediation">{finding.remediation}</p>
+          </div>
+
+          {evidenceEntries.length > 0 && (
+            <div className="evidence-box">
+              <p className="evidence-title">Raw evidence</p>
+              <dl className="evidence-list">
+                {evidenceEntries.map(([key, value]) => (
+                  <div className="evidence-row" key={key}>
+                    <dt>{formatEvidenceKey(key)}</dt>
+                    <dd>{formatEvidenceValue(value)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )}
+        </div>
+      </details>
     </article>
   );
 }
