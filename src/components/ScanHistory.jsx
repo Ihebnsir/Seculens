@@ -4,6 +4,7 @@ import { formatScanDate } from '../utils/date';
 import { formatScannerVersion } from '../utils/scanner';
 import { getScoreTone } from '../utils/score';
 import BreakableUrl from './BreakableUrl';
+import LensMark from './LensMark';
 
 function ScanHistory({ refreshKey, activeScanId, onSelectScan, onDeleteScan }) {
   const [scans, setScans] = useState([]);
@@ -51,13 +52,11 @@ function ScanHistory({ refreshKey, activeScanId, onSelectScan, onDeleteScan }) {
 
       {error && <p className="error-message">{error}</p>}
       {!loading && !error && scans.length === 0 && (
-        <p className="empty-state-message history-empty">
-          <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M6 4.5h8l4 4v11H6v-15Z" />
-            <path d="M14 4.5v4h4M9 13h6M9 16h6" />
-          </svg>
-          No scans yet
-        </p>
+        <div className="empty-state-body history-empty">
+          <LensMark className="empty-state-mark" muted />
+          <p className="empty-state-title">No scans yet</p>
+          <p className="empty-state-hint">Scans you run will appear here.</p>
+        </div>
       )}
 
       {scans.length > 0 && (

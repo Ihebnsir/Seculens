@@ -385,8 +385,124 @@
   color: var(--green);
 }
 
-.loading-message {
-  color: var(--muted);
+/* ---------- Réticule SecuLens (logo, états vides, chargement) ---------- */
+
+.lens-mark {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.lens-ring {
+  stroke: var(--green);
+  stroke-width: 2;
+}
+
+.lens-iris {
+  stroke: var(--cyan);
+  stroke-width: 1.5;
+}
+
+.lens-cross {
+  stroke: var(--cyan);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.lens-core {
+  fill: var(--green);
+}
+
+/* Version discrète pour les états vides : traits gris, seul le point central garde l'accent. */
+.lens-mark.is-muted .lens-ring,
+.lens-mark.is-muted .lens-iris,
+.lens-mark.is-muted .lens-cross {
+  stroke: var(--faint);
+}
+
+.lens-mark.is-muted .lens-core {
+  fill: var(--cyan);
+}
+
+/* Faisceau de scan : un secteur translucide qui fait le tour du réticule. */
+.lens-sweep {
+  transform-origin: 24px 24px;
+  animation: lens-sweep 1.6s linear infinite;
+}
+
+.lens-sweep-beam {
+  fill: var(--cyan);
+  opacity: 0.22;
+}
+
+.lens-sweep-edge {
+  stroke: var(--cyan);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+@keyframes lens-sweep {
+  to { transform: rotate(360deg); }
+}
+
+/* Logo à gauche du nom, dans l'en-tête du tableau de bord et des écrans de connexion. */
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  filter: var(--glow-mark);
+}
+
+/* Chargement d'un scan : réticule qui balaie, texte réservé aux lecteurs d'écran. */
+.scan-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 160px;
+  padding: var(--space-6);
+  border: 1px solid var(--line-blue);
+  border-radius: var(--radius-panel);
+  background: var(--panel);
+}
+
+.scan-loader-mark {
+  width: 72px;
+  height: 72px;
+  filter: var(--glow-mark);
+}
+
+.scan-loader-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Mouvement réduit : pas de balayage ; le faisceau reste immobile et le texte s'affiche. */
+@media (prefers-reduced-motion: reduce) {
+  .lens-sweep {
+    animation: none;
+  }
+
+  .scan-loader-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    color: var(--muted);
+    font-size: var(--fs-md);
+  }
 }
 
 .empty-state {
@@ -401,22 +517,37 @@
   margin: 0;
 }
 
-.empty-state-message {
+/* États vides : réticule discret, titre et indication, centrés. */
+.empty-state-body {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: var(--space-2);
-  color: var(--faint);
-  font-size: var(--fs-md);
+  padding: var(--space-4) 0;
+  text-align: center;
 }
 
-.empty-state-icon {
-  flex: 0 0 19px;
-  width: 19px;
-  height: 19px;
-  stroke: var(--faint);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.4;
+.empty-state-mark {
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--space-2);
+}
+
+.empty-state-body p {
+  margin: 0;
+}
+
+.empty-state-title {
+  color: var(--text-soft);
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.empty-state-hint {
+  max-width: 32ch;
+  text-wrap: balance;
+  color: var(--muted);
+  font-size: var(--fs-sm);
 }
 
 /* ---------- Formulaire de scan ---------- */
@@ -471,7 +602,7 @@
 }
 
 .history-empty {
-  margin: var(--space-4) 0 0;
+  margin-top: var(--space-2);
 }
 
 .history-list {
@@ -1251,6 +1382,14 @@
   padding: var(--space-4) 0;
 }
 
+/* Grand réticule au-dessus de l'accroche : même signature que le logo, en plus grand. */
+.auth-lens {
+  width: 112px;
+  height: 112px;
+  margin-bottom: var(--space-6);
+  filter: var(--glow-mark);
+}
+
 .eyebrow {
   color: var(--green);
   font-family: var(--mono);
@@ -1361,6 +1500,17 @@
 
   .auth-identity h2 {
     margin: var(--space-3) 0;
+  }
+
+  .auth-lens {
+    width: 56px;
+    height: 56px;
+    margin-bottom: var(--space-4);
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
   }
 
   .auth-panel {

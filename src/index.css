@@ -71,6 +71,8 @@
   --glow-secondary: 0 0 12px rgba(0, 212, 255, 0.1);
   --glow-danger: 0 0 12px rgba(255, 70, 112, 0.12);
   --glow-checkbox: 0 0 8px rgba(0, 212, 255, 0.15);
+  /* Halo du réticule (logo, chargement, écrans de connexion). */
+  --glow-mark: drop-shadow(0 0 6px rgba(0, 245, 160, 0.28));
   --focus-ring: 0 0 0 2px rgba(0, 212, 255, 0.1), 0 0 18px rgba(0, 212, 255, 0.12);
   /* Halo de l'arc de la jauge du score, dans la couleur du verdict. */
   --gauge-glow: drop-shadow(0 0 4px currentColor);
@@ -169,6 +171,7 @@
   --glow-secondary: 0 2px 8px rgba(20, 40, 55, 0.1);
   --glow-danger: 0 2px 8px rgba(192, 26, 63, 0.12);
   --glow-checkbox: 0 0 0 3px rgba(0, 115, 154, 0.12);
+  --glow-mark: none;
   --focus-ring: 0 0 0 3px rgba(0, 115, 154, 0.15);
   --gauge-glow: none;
 

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Réticule SecuLens (même dessin que src/components/LensMark.jsx), traits épaissis pour rester net à 16 px.
+       Couleurs du thème clair par défaut, néon si le navigateur est en mode sombre. -->
+  <style>
+    .ring { stroke: #007a52; }
+    .aim { stroke: #00739a; }
+    .core { fill: #007a52; }
+    @media (prefers-color-scheme: dark) {
+      .ring { stroke: #00f5a0; }
+      .aim { stroke: #00d4ff; }
+      .core { fill: #00f5a0; }
+    }
+  </style>
+  <circle class="ring" cx="24" cy="24" r="19.5" stroke-width="3.5" />
+  <circle class="aim" cx="24" cy="24" r="8.5" stroke-width="3" />
+  <path class="aim" d="M24 1.75v9M24 37.25v9M1.75 24h9M37.25 24h9" stroke-width="3.5" stroke-linecap="round" />
+  <circle class="core" cx="24" cy="24" r="3" />
+</svg>

@@ -9,6 +9,9 @@ import ForgotPasswordForm from './components/ForgotPasswordForm';
 import ResetPasswordForm from './components/ResetPasswordForm';
 import EmailVerificationForm from './components/EmailVerificationForm';
 import ThemeToggle from './components/ThemeToggle';
+import AuthLayout from './components/AuthLayout';
+import BrandLockup from './components/BrandLockup';
+import ScanLoader from './components/ScanLoader';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { createScan, getAiStatus, getScan, setFindingFixed, UNAUTHORIZED_EVENT } from './api/scansApi';
 import { getEmailVerificationToken, getResetPasswordToken } from './utils/url';
@@ -176,22 +179,9 @@ function AppContent() {
 
   if (emailVerificationToken) {
     return (
-      <div className="app-shell auth-shell">
-        <header className="app-header auth-brand">
-          <div className="brand-lockup">
-            <h1>SecuLens</h1>
-            <p>Web Security Assessment Platform</p>
-          </div>
-          <ThemeToggle />
-        </header>
-        <main className="auth-layout">
-          <div className="auth-identity">
-            <span className="eyebrow">SECULENS / ACCESS</span>
-            <h2>Security insights, in focus.</h2>
-          </div>
-          <EmailVerificationForm token={emailVerificationToken} />
-        </main>
-      </div>
+      <AuthLayout>
+        <EmailVerificationForm token={emailVerificationToken} />
+      </AuthLayout>
     );
   }
 
@@ -203,62 +193,33 @@ function AppContent() {
     );
 
     return (
-      <div className="app-shell auth-shell">
-        <header className="app-header auth-brand">
-          <div className="brand-lockup">
-            <h1>SecuLens</h1>
-            <p>Web Security Assessment Platform</p>
-          </div>
-          <ThemeToggle />
-        </header>
-        <main className="auth-layout">
-          <div className="auth-identity">
-            <span className="eyebrow">SECULENS / ACCESS</span>
-            <h2>Security insights, in focus.</h2>
-          </div>
-          {recoveryForm}
-        </main>
-      </div>
+      <AuthLayout>
+        {recoveryForm}
+      </AuthLayout>
     );
   }
 
   if (!isAuthenticated) {
     return (
-      <div className="app-shell auth-shell">
-        <header className="app-header auth-brand">
-          <div className="brand-lockup">
-            <h1>SecuLens</h1>
-            <p>Web Security Assessment Platform</p>
-          </div>
-          <ThemeToggle />
-        </header>
-        <main className="auth-layout">
-          <div className="auth-identity">
-            <span className="eyebrow">SECULENS / ACCESS</span>
-            <h2>Security insights, in focus.</h2>
-          </div>
-          {authMode === 'login' ? (
-            <LoginForm
-              onSwitchToRegister={() => setAuthMode('register')}
-              onSwitchToForgotPassword={() => setAuthMode('forgot')}
-            />
-          ) : authMode === 'register' ? (
-            <RegisterForm onSwitchToLogin={() => setAuthMode('login')} />
-          ) : (
-            <ForgotPasswordForm onSwitchToLogin={() => setAuthMode('login')} />
-          )}
-        </main>
-      </div>
+      <AuthLayout>
+        {authMode === 'login' ? (
+          <LoginForm
+            onSwitchToRegister={() => setAuthMode('register')}
+            onSwitchToForgotPassword={() => setAuthMode('forgot')}
+          />
+        ) : authMode === 'register' ? (
+          <RegisterForm onSwitchToLogin={() => setAuthMode('login')} />
+        ) : (
+          <ForgotPasswordForm onSwitchToLogin={() => setAuthMode('login')} />
+        )}
+      </AuthLayout>
     );
   }
 
   return (
     <div className="app-shell">
       <header className="app-header">
-        <div className="brand-lockup">
-          <h1>SecuLens</h1>
-          <p>Web Security Assessment Platform</p>
-        </div>
+        <BrandLockup />
         <div className="account-bar">
           <span className="user-avatar" aria-hidden="true">
             {user?.email?.trim()?.charAt(0)?.toUpperCase() || '?'}
@@ -284,7 +245,7 @@ function AppContent() {
             loading={status === 'loading'}
           />
 
-          {status === 'loading' && <p className="loading-message">Loading scan...</p>}
+          {status === 'loading' && <ScanLoader />}
           <ResultsPanel scan={scanResult} aiLoading={aiLoading} onSetFindingFixed={handleSetFindingFixed} />
         </div>
 

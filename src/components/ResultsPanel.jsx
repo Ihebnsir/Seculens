@@ -4,20 +4,18 @@ import { formatScanDate } from '../utils/date';
 import { formatScannerVersion } from '../utils/scanner';
 import { sortFindingsBySeverity } from '../utils/severity';
 import BreakableUrl from './BreakableUrl';
+import LensMark from './LensMark';
 
 function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
   if (!scan) {
     return (
       <section className="results-panel empty-state" aria-live="polite">
         <h2>Results</h2>
-        <p className="empty-state-message">
-          <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <circle cx="12" cy="12" r="8" />
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 1.5v3M22.5 12h-3M12 22.5v-3M1.5 12h3" />
-          </svg>
-          No scan yet
-        </p>
+        <div className="empty-state-body">
+          <LensMark className="empty-state-mark" muted />
+          <p className="empty-state-title">No scan yet</p>
+          <p className="empty-state-hint">Enter a target URL above to run your first scan.</p>
+        </div>
       </section>
     );
   }
