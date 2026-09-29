@@ -97,6 +97,12 @@ function FindingCard({ finding, onSetFixed, appearIndex = 0 }) {
           <p className="finding-meta">
             <span className="finding-rule">{finding.ruleId}</span>
             <span className="finding-cwe">{finding.cwe}</span>
+            {/* Catégorie OWASP Top 10 (optionnelle) : le code seul, le nom complet au survol. */}
+            {finding.owasp?.code && (
+              <span className="finding-owasp" title={finding.owasp.name}>
+                {finding.owasp.code}
+              </span>
+            )}
             <span>Confidence: {finding.confidence}</span>
           </p>
 

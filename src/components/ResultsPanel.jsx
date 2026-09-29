@@ -6,6 +6,7 @@ import { formatScannerVersion } from '../utils/scanner';
 import { sortFindingsBySeverity } from '../utils/severity';
 import BreakableUrl from './BreakableUrl';
 import LensMark from './LensMark';
+import { downloadScanReport } from '../utils/pdfReport';
 
 // Apparition en cascade : chaque élément démarre 50 ms après le précédent, plafonné pour ne jamais faire attendre.
 const CASCADE_MAX_INDEX = 8;
@@ -16,6 +17,8 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
   // par le tri (après "Mark as fixed") ou un rechargement des explications IA ne rejoue pas l'animation.
   const scanId = scan?._id;
   const [settledScanId, setSettledScanId] = useState(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfError, setPdfError] = useState('');
   const isAppearing = Boolean(scanId) && scanId !== settledScanId;
 
   useEffect(() => {
@@ -37,6 +40,21 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
     );
   }
 
+  // Génère le rapport PDF dans le navigateur ; le bouton reste désactivé le temps de la génération.
+  const handleDownloadPdf = async () => {
+    setPdfBusy(true);
+    setPdfError('');
+    try {
+      await downloadScanReport(scan);
+    } catch {
+      setPdfError('The PDF report could not be generated. Please try again.');
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
+  const regression = scan.scoreRegression;
+
   // Affichage seulement : les findings les plus graves (et encore ouverts) passent en premier.
   const sortedFindings = sortFindingsBySeverity(scan.findings);
 
@@ -44,7 +62,12 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
     <section className={`results-panel${isAppearing ? ' is-appearing' : ''}`} aria-live="polite">
       {/* 1. De quoi parle-t-on : la cible et le contexte du scan. */}
       <div className="results-header">
-        <h2>Results</h2>
+        <div className="results-title">
+          <h2>Results</h2>
+          <button type="button" className="secondary-button pdf-button" onClick={handleDownloadPdf} disabled={pdfBusy}>
+            {pdfBusy ? 'Generating PDF...' : 'Download PDF'}
+          </button>
+        </div>
         <div className="scan-meta">
           <span>HTTP {scan.status}</span>
           <span>{formatScanDate(scan.createdAt)}</span>
@@ -52,6 +75,18 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
         </div>
       </div>
       <p className="scan-target"><BreakableUrl url={scan.target} /></p>
+      {pdfError && <p className="error-message" role="alert">{pdfError}</p>}
+
+      {/* Alerte factuelle : le backend ne l'envoie que si le score a baissé d'au moins 15 points. */}
+      {regression && (
+        <p className="score-regression" role="status">
+          <span className="score-regression-icon" aria-hidden="true">▼</span>
+          <span>
+            Security score dropped by <strong>{regression.drop} points</strong> since the last scan{' '}
+            <span className="score-regression-values">({regression.previousScore} → {scan.score})</span>
+          </span>
+        </p>
+      )}
 
       {/* 2. Le verdict : score et répartition par gravité. */}
       {/* key : un autre scan remonte la carte, donc pas de flash du score en changeant de scan. */}

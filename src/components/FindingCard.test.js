@@ -37,3 +37,16 @@ test('labels a fixed finding with a "Fixed" tag and keeps its details folded', (
   expect(screen.getByRole('checkbox', { name: 'Mark as fixed' })).toBeChecked();
   expect(container.querySelector('details.finding-details').open).toBe(false);
 });
+
+test('shows the OWASP category next to the CWE, with its name on hover, only when present', () => {
+  const { rerender } = render(<FindingCard finding={finding} onSetFixed={jest.fn()} />);
+  expect(screen.queryByText('A05:2021')).not.toBeInTheDocument();
+
+  rerender(
+    <FindingCard
+      finding={{ ...finding, owasp: { code: 'A05:2021', name: 'Security Misconfiguration' } }}
+      onSetFixed={jest.fn()}
+    />
+  );
+  expect(screen.getByText('A05:2021')).toHaveAttribute('title', 'Security Misconfiguration');
+});
