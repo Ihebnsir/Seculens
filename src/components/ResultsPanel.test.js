@@ -15,6 +15,10 @@ jest.mock('jspdf', () => {
   };
 });
 
+// L'API de comparaison est simulée : on vérifie seulement le branchement du bouton.
+jest.mock('../api/scansApi', () => ({ compareWithPrevious: jest.fn() }));
+const { compareWithPrevious } = jest.requireMock('../api/scansApi');
+
 const findings = [
   { _id: 'f1', ruleId: 'SEC-001', title: 'CSP missing', severity: 'high', confidence: 'high', cwe: 'CWE-693', evidence: {}, description: 'd', remediation: 'r', fixed: false },
   { _id: 'f2', ruleId: 'SEC-003', title: 'Referrer', severity: 'low', confidence: 'high', cwe: 'CWE-200', evidence: {}, description: 'd', remediation: 'r', fixed: false }
@@ -78,4 +82,25 @@ test('generates and downloads the PDF report when the button is clicked', async 
   await waitFor(() => expect(mockSave).toHaveBeenCalledWith('seculens-report-example.com-2026-09-29.pdf'));
   expect(await screen.findByRole('button', { name: 'Download PDF' })).toBeEnabled();
   expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+});
+
+test('loads the comparison on demand, shows it below the score and can close it', async () => {
+  let resolveCompare;
+  compareWithPrevious.mockReturnValue(new Promise((resolve) => { resolveCompare = resolve; }));
+  render(<ResultsPanel scan={scan} onSetFindingFixed={jest.fn()} />);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Compare with previous scan' }));
+  expect(compareWithPrevious).toHaveBeenCalledWith('scan-1');
+  expect(screen.getByRole('button', { name: 'Comparing...' })).toBeDisabled();
+
+  await act(async () => resolveCompare({ hasPrevious: false }));
+  expect(screen.getByText('This is the first scan for this target - nothing to compare yet.')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Close comparison' }));
+  expect(screen.queryByText(/nothing to compare yet/)).not.toBeInTheDocument();
+});
+
+test('hides the compare button for a scan without an id', () => {
+  render(<ResultsPanel scan={{ ...scan, _id: undefined }} onSetFindingFixed={jest.fn()} />);
+  expect(screen.queryByRole('button', { name: 'Compare with previous scan' })).not.toBeInTheDocument();
 });

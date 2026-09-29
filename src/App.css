@@ -729,9 +729,10 @@
   overflow-wrap: break-word;
 }
 
-/* Titre et bouton d'export sur la même ligne. */
+/* Titre et boutons (export, comparaison) sur la même ligne ; les boutons passent dessous sur mobile. */
 .results-title {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
 }
@@ -771,6 +772,185 @@
   font-family: var(--mono);
   white-space: nowrap;
 }
+
+/* ---------- Comparaison avec le scan précédent ---------- */
+
+.scan-comparison {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+}
+
+.comparison-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.comparison-heading {
+  margin: 0;
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.comparison-close {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--fs-lg);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.comparison-close:hover {
+  color: var(--text);
+  border-color: var(--focus-border);
+}
+
+.comparison-close:focus-visible {
+  outline: 2px solid var(--focus-border);
+  outline-offset: 2px;
+}
+
+.comparison-message,
+.comparison-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-md);
+}
+
+/* Évolution du score : vert si amélioration, rouge si baisse, neutre si égal. */
+.comparison-score {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+
+.score-trend-up { color: var(--green); }
+.score-trend-down { color: var(--danger); }
+.score-trend-same { color: var(--text-soft); }
+
+/* Chaque catégorie reprend le style des sections Evidence / AI Insight : filet gauche et fond teintés. */
+.comparison-section {
+  --comparison-color: var(--muted);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--comparison-color);
+  border-radius: var(--radius-panel);
+}
+
+.comparison-fixed {
+  --comparison-color: var(--green);
+  background: rgba(0, 245, 160, 0.05);
+}
+
+.comparison-new {
+  --comparison-color: var(--orange);
+  background: rgba(255, 137, 76, 0.06);
+}
+
+.comparison-persisting {
+  --comparison-color: var(--muted);
+  background: var(--surface-sunken);
+}
+
+.comparison-section summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+}
+
+.comparison-section summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Même chevron que "Show details" dans FindingCard, poussé à droite. */
+.comparison-section summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform var(--transition);
+}
+
+.comparison-section[open] summary::after {
+  transform: translateY(1px) rotate(-135deg);
+}
+
+.comparison-section summary:focus-visible {
+  outline: 2px solid var(--focus-border);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+.comparison-icon {
+  width: 1.2em;
+  color: var(--comparison-color);
+  text-align: center;
+}
+
+.comparison-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-2) 0 var(--space-1);
+  list-style: none;
+}
+
+.comparison-empty {
+  padding: var(--space-1) 0;
+}
+
+/* Une ligne compacte : badge, règle, titre ; le titre passe à la ligne s'il est long. */
+.comparison-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  font-size: var(--fs-md);
+}
+
+.comparison-rule {
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+}
+
+.comparison-title {
+  flex: 1 1 200px;
+  min-width: 0;
+  color: var(--text-soft);
+  overflow-wrap: anywhere;
+}
+
+/* Thème clair : fonds teintés recalés sur les accents assombris. */
+:root[data-theme="light"] .comparison-fixed { background: rgba(0, 122, 82, 0.06); }
+:root[data-theme="light"] .comparison-new { background: rgba(179, 71, 15, 0.06); }
 
 .scan-meta {
   display: flex;

@@ -7,6 +7,8 @@ import { sortFindingsBySeverity } from '../utils/severity';
 import BreakableUrl from './BreakableUrl';
 import LensMark from './LensMark';
 import { downloadScanReport } from '../utils/pdfReport';
+import { compareWithPrevious } from '../api/scansApi';
+import ScanComparison from './ScanComparison';
 
 // Apparition en cascade : chaque élément démarre 50 ms après le précédent, plafonné pour ne jamais faire attendre.
 const CASCADE_MAX_INDEX = 8;
@@ -19,12 +21,22 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
   const [settledScanId, setSettledScanId] = useState(null);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfError, setPdfError] = useState('');
+  // Comparaison avec le scan précédent : null tant que l'utilisateur ne l'a pas demandée.
+  const [comparison, setComparison] = useState(null);
+  const [compareBusy, setCompareBusy] = useState(false);
+  const [compareError, setCompareError] = useState('');
   const isAppearing = Boolean(scanId) && scanId !== settledScanId;
 
   useEffect(() => {
     if (!scanId) return undefined;
     const timer = setTimeout(() => setSettledScanId(scanId), CASCADE_DURATION_MS);
     return () => clearTimeout(timer);
+  }, [scanId]);
+
+  // Un autre scan est affiché : l'ancienne comparaison ne le concerne plus.
+  useEffect(() => {
+    setComparison(null);
+    setCompareError('');
   }, [scanId]);
 
   if (!scan) {
@@ -53,6 +65,21 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
     }
   };
 
+  // La comparaison ne dépend que des findings, enregistrés dès la création du scan :
+  // elle n'a pas besoin d'attendre la fin de l'analyse IA.
+  const handleCompare = async () => {
+    setCompareBusy(true);
+    setCompareError('');
+    try {
+      setComparison(await compareWithPrevious(scanId));
+    } catch (requestError) {
+      setComparison(null);
+      setCompareError(requestError.message);
+    } finally {
+      setCompareBusy(false);
+    }
+  };
+
   const regression = scan.scoreRegression;
 
   // Affichage seulement : les findings les plus graves (et encore ouverts) passent en premier.
@@ -67,6 +94,12 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
           <button type="button" className="secondary-button pdf-button" onClick={handleDownloadPdf} disabled={pdfBusy}>
             {pdfBusy ? 'Generating PDF...' : 'Download PDF'}
           </button>
+          {/* Sans _id, le scan n'est pas encore enregistré : il n'y a rien à comparer côté serveur. */}
+          {scanId && (
+            <button type="button" className="secondary-button pdf-button" onClick={handleCompare} disabled={compareBusy}>
+              {compareBusy ? 'Comparing...' : 'Compare with previous scan'}
+            </button>
+          )}
         </div>
         <div className="scan-meta">
           <span>HTTP {scan.status}</span>
@@ -91,6 +124,9 @@ function ResultsPanel({ scan, aiLoading, onSetFindingFixed }) {
       {/* 2. Le verdict : score et répartition par gravité. */}
       {/* key : un autre scan remonte la carte, donc pas de flash du score en changeant de scan. */}
       <ScoreCard key={scan._id} score={scan.score} findings={scan.findings} />
+
+      {compareError && <p className="error-message" role="alert">{compareError}</p>}
+      {comparison && <ScanComparison comparison={comparison} onClose={() => setComparison(null)} />}
 
       {/* Message discret : les findings restent visibles et utilisables pendant l'analyse IA. */}
       {aiLoading && (

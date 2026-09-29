@@ -87,3 +87,13 @@ export async function deleteScan(scanId) {
 
   return request(`/scans/${encodeURIComponent(scanId)}`, { method: 'DELETE' });
 }
+
+// Compare un scan au scan précédent du même target :
+// renvoie { hasPrevious: false } ou { hasPrevious: true, previousScore, currentScore, fixed, new, persisting }.
+export async function compareWithPrevious(scanId) {
+  if (!scanId) {
+    throw new Error('Identifiant du scan manquant.');
+  }
+
+  return request(`/scans/${encodeURIComponent(scanId)}/compare`);
+}
