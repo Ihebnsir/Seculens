@@ -26,17 +26,17 @@ test('switches to registration and validates the password length', () => {
   expect(screen.getByRole('alert')).toHaveTextContent('au moins 8 caractères');
 });
 
-test('registration asks the user to verify email and offers a generic resend', async () => {
+test('registration logs the user in immediately without a verification screen', async () => {
   global.fetch = jest.fn()
     .mockResolvedValueOnce({
       ok: true,
       status: 201,
-      json: async () => ({ message: 'Compte créé.', email: 'new@example.com' })
+      json: async () => ({ token: 'new-token', user: { id: 'user-2', email: 'new@example.com' } })
     })
-    .mockResolvedValueOnce({
+    .mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({ message: 'If this account exists and is not verified, a verification email has been sent.' })
+      json: async () => []
     });
 
   render(<App />);
@@ -46,60 +46,27 @@ test('registration asks the user to verify email and offers a generic resend', a
   fireEvent.change(screen.getByLabelText('Confirm password'), { target: { value: 'secure-password' } });
   fireEvent.click(screen.getByRole('button', { name: 'Register' }));
 
-  expect(await screen.findByText(/We sent a verification link to new@example.com/)).toBeInTheDocument();
-  expect(window.localStorage.getItem('seculens_token')).toBeNull();
-  fireEvent.click(screen.getByRole('button', { name: 'Resend email' }));
-  expect(await screen.findByRole('status')).toHaveTextContent('If this account exists and is not verified');
-  expect(global.fetch).toHaveBeenNthCalledWith(
-    2,
-    expect.stringMatching(/\/auth\/resend-verification$/),
-    expect.objectContaining({ body: JSON.stringify({ email: 'new@example.com' }) })
-  );
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Log out' })).toBeInTheDocument());
+  expect(window.localStorage.getItem('seculens_token')).toBe('new-token');
+  expect(screen.queryByText(/verification link/i)).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /resend/i })).not.toBeInTheDocument();
 });
 
-test('unverified login offers a resend action without changing the entered email', async () => {
-  global.fetch = jest.fn()
-    .mockResolvedValueOnce({
-      ok: false,
-      status: 403,
-      json: async () => ({ error: 'Veuillez vérifier votre email avant de vous connecter.', emailVerified: false })
-    })
-    .mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({ message: 'If this account exists and is not verified, a verification email has been sent.' })
-    });
+test('a failed login shows the server error without any resend action', async () => {
+  global.fetch = jest.fn().mockResolvedValueOnce({
+    ok: false,
+    status: 401,
+    json: async () => ({ error: 'Email ou mot de passe incorrect.' })
+  });
 
   render(<App />);
   fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'person@example.com' } });
-  fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secure-password' } });
+  fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'wrong-password' } });
   fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('Please verify your email first.');
-  fireEvent.click(screen.getByRole('button', { name: 'Resend verification email' }));
-  expect(await screen.findByRole('status')).toHaveTextContent('If this account exists and is not verified');
-  expect(global.fetch).toHaveBeenNthCalledWith(
-    2,
-    expect.stringMatching(/\/auth\/resend-verification$/),
-    expect.objectContaining({ body: JSON.stringify({ email: 'person@example.com' }) })
-  );
-});
-
-test('clears an existing session when a protected request identifies an unverified account', async () => {
-  window.localStorage.setItem('seculens_token', 'old-session-token');
-  window.localStorage.setItem('seculens_user', JSON.stringify({ email: 'person@example.com' }));
-  global.fetch = jest.fn().mockResolvedValueOnce({
-    ok: false,
-    status: 403,
-    json: async () => ({ error: 'Veuillez vérifier votre email avant de vous connecter.', emailVerified: false })
-  });
-
-  render(<App />);
-
-  await waitFor(() => {
-    expect(screen.getByRole('button', { name: 'Log in' })).toBeInTheDocument();
-  });
-  expect(window.localStorage.getItem('seculens_token')).toBeNull();
+  expect(await screen.findByRole('alert')).toHaveTextContent('Email ou mot de passe incorrect.');
+  expect(screen.queryByRole('button', { name: /resend/i })).not.toBeInTheDocument();
+  expect(global.fetch).toHaveBeenCalledTimes(1);
 });
 
 test('shows the same generic confirmation after requesting a reset link', async () => {

@@ -37,8 +37,10 @@ export function AuthProvider({ children }) {
     saveSession(data);
   };
 
+  // Le backend renvoie { token, user } dès l'inscription : on ouvre la session tout de suite.
   const register = async (email, password) => {
-    return requestRegister(email, password);
+    const data = await requestRegister(email, password);
+    saveSession(data);
   };
 
   const logout = () => {

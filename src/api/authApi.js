@@ -17,7 +17,6 @@ async function sendCredentials(endpoint, email, password) {
   if (!response.ok) {
     const requestError = new Error(data?.error || 'La demande de connexion a échoué.');
     requestError.status = response.status;
-    requestError.emailVerified = data?.emailVerified;
     throw requestError;
   }
 
@@ -30,10 +29,6 @@ export function register(email, password) {
 
 export function login(email, password) {
   return sendCredentials('login', email, password);
-}
-
-export function resendVerification(email) {
-  return sendPasswordRequest('resend-verification', { email });
 }
 
 async function sendPasswordRequest(endpoint, body) {
